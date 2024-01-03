@@ -1,6 +1,8 @@
 import sys
 from datetime import date
 from reportlab.pdfgen.canvas import Canvas
+import yfinance as yf
+
 
 
 def main():
@@ -8,9 +10,17 @@ def main():
         sys.exit("Usage: python main.py [TICKER SYMBOL]")
 
     ticker = sys.argv[1]
-    
+
     if len(ticker) < 2 or len(ticker) > 5:
         sys.exit("A valid ticker must be between 2 and 5 characters long.")
+
+    # Check if ticker is a valid symbol by fetching data from API
+    company = yf.Ticker(ticker)
+
+    try:
+        info = company.info
+    except:
+         sys.exit(ticker + " does not seem to be a valid ticker.")
 
     # Get date
     today = date.today()
