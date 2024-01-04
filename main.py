@@ -1,8 +1,10 @@
 import sys
 from datetime import date
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib.pagesizes import A4
 import requests
 import yfinance as yf
+import os.path
 
 
 
@@ -31,9 +33,19 @@ def main():
     # Get date
     today = date.today()
 
+    # Get width and height
+    w, h = A4
+
+    # Filename
+    filename = "reports/" + ticker + "-" + today.strftime("%d%m%y") + ".pdf"
+
+    # Check if file exists
+    if os.path.isfile(filename): 
+        sys.exit("A report for this ticker has already been generated today")
+
     # Start painting canvas
-    canvas = Canvas("reports/" + ticker + "-" + today.strftime("%d%m%y") + ".pdf")
-    canvas.drawString(72, 72, "Hello, World!")
+    canvas = Canvas(filename, pagesize=A4)
+    canvas.drawString(72, h - 50, info['shortName'])
 
     # Save pdf
     canvas.save()
