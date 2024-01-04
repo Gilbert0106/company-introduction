@@ -1,6 +1,7 @@
 from datetime import date
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
+import os.path
 
 
 class Report(object):
@@ -11,10 +12,13 @@ class Report(object):
         self.ticker = ticker
         self.path = "reports/" + ticker + "-" + date.today().strftime("%d%m%y") + ".pdf"
 
-    def canvas(self, size):
+        if os.path.isfile(self.path):
+            raise Exception("A report for this ticker has already been generated today")
+
+    def create_canvas(self):
         self.canvas = Canvas(self.path, pagesize=A4)
 
-    def title(self, name):
+    def add_title(self, name):
         self.canvas.drawString(72, self.h - 50, name)
 
     def save(self): 

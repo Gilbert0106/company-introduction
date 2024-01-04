@@ -1,7 +1,6 @@
 import sys
 import requests
 import yfinance as yf
-import os.path
 
 from report import Report
 
@@ -28,11 +27,10 @@ def main():
         sys.exit(ticker + " does not seem to be a valid ticker.")
 
     # Initialize a new report
-    r = Report(ticker)
-
-    # Check if file exists
-    if os.path.isfile(r.path):
-        sys.exit("A report for this ticker has already been generated today")
+    try:
+        r = Report(ticker)
+    except Exception as e:
+         sys.exit(e)
 
 
 def internet_connection():
