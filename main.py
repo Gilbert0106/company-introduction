@@ -31,6 +31,9 @@ def main():
         r = Report(ticker)
     except Exception as e:
          sys.exit(e)
+    
+    r.add_title(info['shortName'])
+    r.save()
 
 
 def internet_connection():

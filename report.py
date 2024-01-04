@@ -14,12 +14,14 @@ class Report(object):
 
         if os.path.isfile(self.path):
             raise Exception("A report for this ticker has already been generated today")
+        
+        self.create_canvas()
 
     def create_canvas(self):
         self.canvas = Canvas(self.path, pagesize=A4)
 
     def add_title(self, name):
-        self.canvas.drawString(72, self.h - 50, name)
+        self.canvas.drawString(72, self.h - 50, "Introduction of: " + name)
 
     def save(self): 
         self.canvas.save()
