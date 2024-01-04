@@ -1,11 +1,9 @@
 import sys
-from datetime import date
-from reportlab.pdfgen.canvas import Canvas
-from reportlab.lib.pagesizes import A4
 import requests
 import yfinance as yf
 import os.path
 
+from report import Report
 
 
 def main():
@@ -23,32 +21,18 @@ def main():
         sys.exit("Make sure you are connected to the internet.")
 
     # Check if ticker is a valid symbol by fetching data from API
-    company = yf.Ticker(ticker)
-
     try:
+        company = yf.Ticker(ticker)
         info = company.info
     except:
-         sys.exit(ticker + " does not seem to be a valid ticker.")
+        sys.exit(ticker + " does not seem to be a valid ticker.")
 
-    # Get date
-    today = date.today()
-
-    # Get width and height
-    w, h = A4
-
-    # Filename
-    filename = "reports/" + ticker + "-" + today.strftime("%d%m%y") + ".pdf"
+    # Initialize a new report
+    r = Report(ticker)
 
     # Check if file exists
-    if os.path.isfile(filename): 
+    if os.path.isfile(r.path):
         sys.exit("A report for this ticker has already been generated today")
-
-    # Start painting canvas
-    canvas = Canvas(filename, pagesize=A4)
-    canvas.drawString(72, h - 50, info['shortName'])
-
-    # Save pdf
-    canvas.save()
 
 
 def internet_connection():
