@@ -1,5 +1,5 @@
 # Company Introduction
-A dockerized python CLI program that will generate a report of a publically traded company based on ticker symbol
+A dockerized Python CLI program that generates a report of a publically traded company based on ticker symbol.
 
 # Prerequisites
 1. [Install Docker](https://docs.docker.com/get-docker/)
