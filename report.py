@@ -20,12 +20,14 @@ class Report(object):
         self.new_page()
 
     def add_title(self, name):
-        self.canvas.drawString(72, self.h - 50, f'Introduction of:  {name}')
+        self.canvas.setFont(psfontname='Times-Roman', size=24)
+        self.canvas.drawString(32, self.h - 50, f'Introduction of:  {name}')
 
     def add_business_summary(self, summary):
         self.canvas.drawString(72, self.h - 50, summary)
 
     def add_footer(self):
+        self.canvas.setFont(psfontname='Times-Roman', size=12)
         self.canvas.drawString(self.w - 72, 32, f'Page {self.pages_count}.')
 
     def new_page(self):
