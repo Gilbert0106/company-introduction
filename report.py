@@ -10,18 +10,34 @@ class Report(object):
 
     def __init__(self, ticker):
         self.ticker = ticker
-        self.path = "reports/" + ticker + "-" + date.today().strftime("%d%m%y") + ".pdf"
+        self.filepath = "reports/" + ticker + "-" + date.today().strftime("%d%m%y") + ".pdf"
 
-        if os.path.isfile(self.path):
-            raise Exception("A report for this ticker has already been generated today")
-        
-        self.create_canvas()
+        if os.path.isfile(self.filepath):
+            raise Exception(
+                "A report for this ticker has already been generated today")
 
-    def create_canvas(self):
-        self.canvas = Canvas(self.path, pagesize=A4)
+        # Create first page
+        self.new_page()
 
     def add_title(self, name):
-        self.canvas.drawString(72, self.h - 50, "Introduction of: " + name)
+        self.canvas.drawString(72, self.h - 50, f'Introduction of:  {name}')
 
-    def save(self): 
+    def add_business_summary(self, summary):
+        self.canvas.drawString(72, self.h - 50, summary)
+
+    def add_footer(self):
+        self.canvas.drawString(self.w - 72, 32, f'Page {self.pages_count}.')
+
+    def new_page(self):
+        if not hasattr(self, 'canvas'): 
+            # Create first page
+            self.pages_count = 1
+            self.canvas = Canvas(self.filepath, pagesize=A4)
+        else: 
+            self.canvas.showPage()
+            self.pages_count += 1
+        
+        self.add_footer()
+
+    def save(self):
         self.canvas.save()
