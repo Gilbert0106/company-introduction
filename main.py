@@ -33,6 +33,8 @@ def main():
          sys.exit(e)
     
     r.add_title(info['shortName'])
+    r.add_business_summary(info['longBusinessSummary'])
+    r.new_page()
     r.save()
 
 
