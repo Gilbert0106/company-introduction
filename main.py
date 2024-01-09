@@ -1,8 +1,8 @@
 import sys
 import requests
-import yfinance as yf
 
-from report import Report
+from source.report import Report
+from source.companyApi import CompanyApi
 
 
 def main():
@@ -19,12 +19,11 @@ def main():
     if not internet_connection():
         sys.exit("Make sure you are connected to the internet.")
 
-    # Check if ticker is a valid symbol by fetching data from API
+    # Initalize a new CompanyApi
     try:
-        company = yf.Ticker(ticker)
-        info = company.info
-    except:
-        sys.exit(ticker + " does not seem to be a valid ticker.")
+        company = CompanyApi(ticker)
+    except Exception as e:
+         sys.exit(e)
 
     # Initialize a new report
     try:
@@ -32,12 +31,12 @@ def main():
     except Exception as e:
          sys.exit(e)
     
-    r.add_title(info['shortName'])
-    r.add_business_summary(info['longBusinessSummary'])
+    r.add_title(company.info['shortName'])
+    r.add_business_summary(company.info['longBusinessSummary'])
     r.new_page()
     r.save()
 
-
+# Check for internet connection
 def internet_connection():
     try:
         requests.get("https://google.com", timeout=5)
