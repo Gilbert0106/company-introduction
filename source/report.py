@@ -2,14 +2,16 @@ from datetime import date
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
 import os.path
+from source.companyApi import CompanyApi
+
 
 class Report(object):
 
     w, h = A4
 
-    def __init__(self, ticker):
-        self.ticker = ticker
-        self.filepath = "reports/" + ticker + "-" + \
+    def __init__(self, company: CompanyApi) -> None:
+        self.company = company
+        self.filepath = "reports/" + self.company.getSymbol() + "-" + \
             date.today().strftime("%d%m%y") + ".pdf"
 
         if os.path.isfile(self.filepath):
@@ -17,30 +19,32 @@ class Report(object):
                 "A report for this ticker has already been generated today")
 
         # Create first page
-        self.new_page()
+        self.newPage()
+        self.addTitle()
 
-    def add_title(self, name):
+    def addTitle(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=24)
-        self.canvas.drawString(32, self.h - 50, f'Introduction of:  {name} ({self.ticker})')
+        self.canvas.drawString(32, self.h - 50, "Introduction of: %s (%s)" %
+                               (self.company.getName(), self.company.getSymbol()))
 
-    def add_business_summary(self, summary):
+    def addBusinessSummary(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=12)
-        self.canvas.drawString(32, self.h - 82, summary)
+        self.canvas.drawString(32, self.h - 82, self.company.getSummary())
 
-    def add_footer(self):
+    def addFooter(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=12)
-        self.canvas.drawString(self.w - 72, 32, f'Page {self.pages_count}.')
+        self.canvas.drawString(self.w - 72, 32, f'Page {self.pagesCount}.')
 
-    def new_page(self):
+    def newPage(self) -> None:
         if not hasattr(self, 'canvas'):
             # Create first page
-            self.pages_count = 1
+            self.pagesCount = 1
             self.canvas = Canvas(self.filepath, pagesize=A4)
         else:
             self.canvas.showPage()
-            self.pages_count += 1
+            self.pagesCount += 1
 
-        self.add_footer()
+        self.addFooter()
 
-    def save(self):
+    def save(self) -> None:
         self.canvas.save()
