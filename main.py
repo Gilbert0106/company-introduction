@@ -6,35 +6,23 @@ from source.companyApi import CompanyApi
 
 
 def main():
-    # Check for correct usage of program
+    # Make sure correct usage of program
     if not len(sys.argv) == 2:
         sys.exit("Usage: python main.py [TICKER SYMBOL]")
-
-    ticker = sys.argv[1]
-
-    if len(ticker) < 2 or len(ticker) > 5:
+    elif len(sys.argv[1]) < 2 or len(sys.argv[1]) > 5:
         sys.exit("A valid ticker must be between 2 and 5 characters long.")
-
-    # Check if user connected to internet
-    if not internet_connection():
+    elif not internet_connection():
         sys.exit("Make sure you are connected to the internet.")
 
-    # Initalize a new CompanyApi
+    # Initalize a new CompanyApi and Report
     try:
-        company = CompanyApi(ticker)
-    except Exception as e:
-         sys.exit(e)
-
-    # Initialize a new report
-    try:
-        r = Report(ticker)
+        company = CompanyApi(ticker=sys.argv[1])
+        report = Report(company=company)
     except Exception as e:
          sys.exit(e)
     
-    r.add_title(company.info['shortName'])
-    r.add_business_summary(company.info['longBusinessSummary'])
-    r.new_page()
-    r.save()
+    # Save report
+    report.save()
 
 # Check for internet connection
 def internet_connection():
