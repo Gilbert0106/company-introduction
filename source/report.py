@@ -1,7 +1,13 @@
+import os.path
 from datetime import date
+
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
-import os.path
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph
+
 from source.companyApi import CompanyApi
 
 
@@ -18,9 +24,15 @@ class Report(object):
             raise Exception(
                 "A report for this ticker has already been generated today")
 
+        pdfmetrics.registerFont(
+            TTFont("Consola", r"fonts/Consolas-Font/CONSOLA.TTF"))
+
+        self.style = getSampleStyleSheet()
+
         # Create first page
         self.newPage()
         self.addTitle()
+        self.addBusinessSummary()
 
     def addTitle(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=24)
@@ -28,8 +40,10 @@ class Report(object):
                                (self.company.getName(), self.company.getSymbol()))
 
     def addBusinessSummary(self) -> None:
-        self.canvas.setFont(psfontname='Times-Roman', size=12)
-        self.canvas.drawString(32, self.h - 82, self.company.getSummary())
+        string = '<font name="Consola size="16">' + self.company.getSummary() + '</font>'
+        p = Paragraph(string, style=self.style["Normal"])
+        p.wrapOn(self.canvas, self.w - 64, self.h)
+        p.drawOn(self.canvas, 32, self.h - 280)
 
     def addFooter(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=12)
