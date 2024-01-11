@@ -9,6 +9,9 @@ class CompanyApi(object):
             self.info = self.handle.info
         except:
             raise Exception(ticker + " does not seem to be a valid ticker.")
+        
+        if self.info['quoteType'] != 'EQUITY':
+            raise Exception(ticker + " does not seem to be a valid company stock ticker.")
 
     def getName(self) -> str:
         return self.info['shortName']
@@ -17,4 +20,4 @@ class CompanyApi(object):
         return self.info['symbol']
 
     def getSummary(self) -> str:
-        return self.info['longBusinesssSummary']
+        return str(self.info['longBusinessSummary'])
