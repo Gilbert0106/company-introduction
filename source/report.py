@@ -5,6 +5,7 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.colors import HexColor
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
 
@@ -27,7 +28,9 @@ class Report(object):
         pdfmetrics.registerFont(
             TTFont("Consola", r"fonts/Consolas-Font/CONSOLA.TTF"))
 
-        self.style = getSampleStyleSheet()
+        self.style = getSampleStyleSheet()['Normal']
+        self.style.fontName = "Consola"
+        self.style.leading = 15
 
         # Create first page
         self.newPage()
@@ -35,15 +38,25 @@ class Report(object):
         self.addBusinessSummary()
 
     def addTitle(self) -> None:
-        self.canvas.setFont(psfontname='Times-Roman', size=24)
-        self.canvas.drawString(32, self.h - 50, "Introduction of: %s (%s)" %
-                               (self.company.getName(), self.company.getSymbol()))
+        self.style.fontSize = 9
+        self.style.textColor = HexColor("#666666")
+        p = Paragraph(date.today().strftime("%dth of %B %Y")
+                      + ", Introduction of:", style=self.style)
+        p.wrapOn(self.canvas, self.w - 64, self.h)
+        p.drawOn(self.canvas, 32, self.h - p.height - 20)
+
+        self.style.fontSize = 20
+        self.style.textColor = HexColor("#000000")
+        p = Paragraph("%s (%s)" %
+                      (self.company.getName(), self.company.getSymbol()), style=self.style)
+        p.wrapOn(self.canvas, self.w - 64, self.h)
+        p.drawOn(self.canvas, 32, self.h - p.height - 40)
 
     def addBusinessSummary(self) -> None:
-        string = '<font name="Consola size="16">' + self.company.getSummary() + '</font>'
-        p = Paragraph(string, style=self.style["Normal"])
+        self.style.fontSize = 9
+        p = Paragraph(self.company.getSummary(), style=self.style)
         p.wrapOn(self.canvas, self.w - 64, self.h)
-        p.drawOn(self.canvas, 32, self.h - 280)
+        p.drawOn(self.canvas, 32, self.h - p.height - 80)
 
     def addFooter(self) -> None:
         self.canvas.setFont(psfontname='Times-Roman', size=12)
