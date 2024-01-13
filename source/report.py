@@ -82,11 +82,11 @@ class Report(object):
     def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
         x = 32
         y = y - height - spacing
-        width = self.w / 5 - 20
+        width = self.w / len(data) - 100 / len(data)
 
         for item in data:
             self.drawBox(heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
-            x += (self.w - 64) / 5
+            x += (self.w - 64) / len(data)
         return
 
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
