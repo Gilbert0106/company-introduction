@@ -3,7 +3,6 @@ import yfinance as yf
 
 class CompanyApi(object):
     def __init__(self, ticker: str) -> None:
-        # Check if ticker is a valid symbol by fetching data from API
         try:
             self.handle = yf.Ticker(ticker)
             self.info = self.handle.info
@@ -14,6 +13,24 @@ class CompanyApi(object):
             raise Exception(
                 ticker + " does not seem to be a valid company stock ticker.")
 
+        self.currency = self.getCurrency()
+
+    def getCurrency(self) -> str:
+
+        currencySymbol = {
+            'USD': '$',
+            'EUR': '€',
+            'YEN': '¥'
+        }
+
+        if not 'currency' in self.info.keys():
+            raise Exception(f'Could not retireve all necessary data for ticker symbol: \
+                 "{self.getSymbol()}", are there any other ticker symbols that represent this company?')
+        elif self.info['currency'] in currencySymbol.keys():
+            return currencySymbol[self.info['currency']]
+        else:
+            return self.info['currency']
+
     def getName(self) -> str:
         return self.info['shortName']
 
@@ -23,27 +40,37 @@ class CompanyApi(object):
     def getSummary(self) -> str:
         return str(self.info['longBusinessSummary'])
 
-    # TODO: Create method to return a list of dicts with market cap, revenue, gross margin, P/E, dividend yield
+    def formatPercentage(self, number: int) -> str:
+        return f'{round(number * 100, 2)} %'
+
+    def formatAmount(self, number: int) -> str:
+        millnames = ['', 'K.', 'M.', 'B.', 'T.']
+        for i in range(0, 5):
+            if number < 1000 or i == 4:
+                return f'{self.currency}{round(number, 2)} {millnames[i]}'
+            else:
+                number /= 1000
+
     def getIntroductoryMetrics(self) -> list:
         return [
             {
-                'value': '$3 000 B.',
+                'value': self.formatAmount(self.info['marketCap']),
                 'description': 'Market capitalization.'
             },
             {
-                'value': '$1 200 B.',
-                'description': 'Revenue for previous year.'
+                'value': self.formatAmount(self.info['totalRevenue']),
+                'description': 'Total annual revenue.'
             },
             {
-                'value': '46.68 %',
-                'description': 'Gross margin.'
+                'value': self.formatPercentage(self.info["ebitdaMargins"]),
+                'description': 'EBITDA / total revenue.'
             },
             {
-                'value': '37.06',
-                'description': 'Price/Earnings.'
+                'value': str(round(self.info['trailingPE'], 2)),
+                'description': 'Trailing Price/Earnings.'
             },
             {
-                'value': '0.74 %',
+                'value': self.formatPercentage(self.info["trailingAnnualDividendYield"]),
                 'description': 'Dividend yield.'
             }
         ]
