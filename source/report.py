@@ -8,6 +8,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import HexColor
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.barcharts import VerticalBarChart
 
 from source.companyApi import CompanyApi
 
@@ -30,7 +32,11 @@ class Report(object):
         self.newPage()
         self.addTitle()
         self.y = self.addBusinessSummary(80)
-        self.addBoxColumn(data=self.company.getIntroductoryMetrics(), y=self.y)
+        self.y = self.addBoxColumn(
+            data=self.company.getIntroductoryMetrics(), y=self.y)
+        self.addBarChart(data=self.company.getBarChartData(), y=self.y)
+
+        # Next page
 
     def createPath(self, ticker: str) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
@@ -55,6 +61,21 @@ class Report(object):
         style.leading = 15
         return style
 
+    def newPage(self) -> None:
+        if not hasattr(self, 'canvas'):
+            self.pagesCount = 1
+            self.canvas = Canvas(self.path, pagesize=A4)
+        else:
+            self.canvas.showPage()
+            self.pagesCount += 1
+
+        self.addFooter()
+
+    def addFooter(self) -> None:
+        pageNumber = Paragraph(f'Page {self.pagesCount}.', style=self.style)
+        pageNumber.wrapOn(self.canvas, 72, 72)
+        pageNumber.drawOn(canvas=self.canvas, x=self.w - 72, y=20)
+
     def addTitle(self) -> int:
         self.style.fontSize = 9
         self.style.textColor = HexColor("#666666")
@@ -75,7 +96,8 @@ class Report(object):
     def addBusinessSummary(self, y: int) -> int:
         self.style.fontSize = 9
         p = Paragraph(self.company.getSummary(), style=self.style)
-        p.wrapOn(canv=self.canvas, aW=self.w - self.margin * 2, aH=self.h - y - self.margin)
+        p.wrapOn(canv=self.canvas, aW=self.w -
+                 self.margin * 2, aH=self.h - y - self.margin)
         p.drawOn(canvas=self.canvas, x=self.margin, y=self.h - y - p.height)
 
         return self.h - y - p.height
@@ -86,9 +108,11 @@ class Report(object):
         width = self.w / len(data) - 100 / len(data)
 
         for item in data:
-            self.drawBox(heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
+            self.drawBox(
+                heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
             x += (self.w - self.margin * 2) / len(data)
-        return
+        
+        return y
 
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
         self.canvas.setStrokeColor(HexColor("#ffffff"))
@@ -107,20 +131,36 @@ class Report(object):
                             height - heading_text.height - 10)
         subtext_text.drawOn(self.canvas, x + 10, y + 10)
 
-    def addFooter(self) -> None:
-        pageNumber = Paragraph(f'Page {self.pagesCount}.', style=self.style)
-        pageNumber.wrapOn(self.canvas, 72, 72)
-        pageNumber.drawOn(canvas=self.canvas, x=self.w - 72, y=20)
+    def addBarChart(self, data: list, y: int) -> None:
+        # Add a heading
+        self.style.fontSize = 16
+        heading = Paragraph("Bar chart heading", self.style)
+        heading.wrapOn(self.canvas, self.w, self.h)
+        heading.drawOn(self.canvas, self.margin, y - 40)
 
-    def newPage(self) -> None:
-        if not hasattr(self, 'canvas'):
-            self.pagesCount = 1
-            self.canvas = Canvas(self.path, pagesize=A4)
-        else:
-            self.canvas.showPage()
-            self.pagesCount += 1
+        # Add helptext
+        self.style.fontSize = 9
+        self.style.textColor = HexColor("#666666")
+        p = Paragraph("Lorem ipsum dolor set ami", style=self.style)
+        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
+        p.drawOn(self.canvas, self.margin, y - heading.height - p.height - 40)
 
-        self.addFooter()
+        # Create a ReportLab Drawing object
+        drawing = Drawing(self.w - self.margin * 2, 200)
+
+        # Create a bar chart
+        chart = VerticalBarChart()
+        chart.width = self.w - self.margin * 3
+        chart.height = y - self.margin * 2 - heading.height - 100
+        chart.data = [[x[1] for x in data]]
+        chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
+
+        # Add the bar chart to the drawing
+        drawing.add(chart)
+
+        # Draw the drawing on the canvas
+        drawing.wrapOn(self.canvas, self.w - self.margin * 4, chart.height)
+        drawing.drawOn(self.canvas, self.margin, self.margin * 2)
 
     def save(self) -> None:
         self.canvas.save()
