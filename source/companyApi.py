@@ -9,9 +9,10 @@ class CompanyApi(object):
             self.info = self.handle.info
         except:
             raise Exception(ticker + " does not seem to be a valid ticker.")
-        
+
         if self.info['quoteType'] != 'EQUITY':
-            raise Exception(ticker + " does not seem to be a valid company stock ticker.")
+            raise Exception(
+                ticker + " does not seem to be a valid company stock ticker.")
 
     def getName(self) -> str:
         return self.info['shortName']
@@ -21,3 +22,28 @@ class CompanyApi(object):
 
     def getSummary(self) -> str:
         return str(self.info['longBusinessSummary'])
+
+    # TODO: Create method to return a list of dicts with market cap, revenue, gross margin, P/E, dividend yield
+    def getIntroductoryMetrics(self) -> list:
+        return [
+            {
+                'value': '$3 000 B.',
+                'description': 'Market capitalization.'
+            },
+            {
+                'value': '$1 200 B.',
+                'description': 'Revenue for previous year.'
+            },
+            {
+                'value': '46.68 %',
+                'description': 'Gross margin.'
+            },
+            {
+                'value': '37.06',
+                'description': 'Price/Earnings.'
+            },
+            {
+                'value': '0.74 %',
+                'description': 'Dividend yield.'
+            }
+        ]
