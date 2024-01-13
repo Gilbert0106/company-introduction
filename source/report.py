@@ -18,26 +18,43 @@ class Report(object):
 
     def __init__(self, company: CompanyApi) -> None:
         self.company = company
-        self.filepath = "reports/" + self.company.getSymbol() + "-" + \
-            date.today().strftime("%d%m%y") + ".pdf"
 
-        if os.path.isfile(self.filepath):
-            raise Exception(
-                "A report for this ticker has already been generated today")
+        try:
+            self.path = self.createPath(ticker=self.company.getSymbol())
+            self.style = self.createStyle(
+                fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF")
+        except Exception as e:
+            raise Exception(e)
 
-        pdfmetrics.registerFont(
-            TTFont("Consola", r"fonts/Consolas-Font/CONSOLA.TTF"))
-
-        self.style = getSampleStyleSheet()['Normal']
-        self.style.fontName = "Consola"
-        self.style.leading = 15
-
-        # Create first page
         self.newPage()
         self.addTitle()
-        self.addBusinessSummary()
+        self.y = self.addBusinessSummary(80)
+        self.addBoxColumn(data=self.company.getIntroductoryMetrics(), y=self.y)
 
-    def addTitle(self) -> None:
+    def createPath(self, ticker: str) -> str:
+        filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
+
+        if os.path.isfile(path=filepath):
+            raise Exception(
+                "A report for ticker " + ticker + " has already been generated today")
+
+        return filepath
+
+    def createStyle(self, fontName: str, fontPath: str) -> list:
+        if not os.path.isfile(path=fontPath):
+            raise Exception("The font can not be loaded from: " + fontPath)
+
+        # Register font
+        pdfmetrics.registerFont(
+            TTFont(name=fontName, filename=fontPath))
+
+        # Set style sheet
+        style = getSampleStyleSheet()['Normal']
+        style.fontName = "Consola"
+        style.leading = 15
+        return style
+
+    def addTitle(self) -> int:
         self.style.fontSize = 9
         self.style.textColor = HexColor("#666666")
         p = Paragraph(date.today().strftime("%dth of %B %Y")
@@ -52,55 +69,52 @@ class Report(object):
         p.wrapOn(self.canvas, self.w - 64, self.h)
         p.drawOn(self.canvas, 32, self.h - p.height - 45)
 
-    def addBusinessSummary(self) -> None:
+        return self.h - p.height - 45
+
+    def addBusinessSummary(self, y: int) -> int:
         self.style.fontSize = 9
         p = Paragraph(self.company.getSummary(), style=self.style)
-        p.wrapOn(self.canvas, self.w - 70, self.h)
-        p.drawOn(self.canvas, 32, self.h - p.height - 80)
+        p.wrapOn(canv=self.canvas, aW=self.w - 64, aH=self.h - y - 32)
+        p.drawOn(canvas=self.canvas, x=32, y=self.h - y - p.height)
 
-         # Add 5 boxes underneath the paragraph
-        box_height = 60
-        box_spacing = 20
-        box_x = 32
-        box_y = self.h - p.height - 80 - box_height - box_spacing
+        return self.h - y - p.height
 
-        for i in range(1, 6):
-            box_text = "12.6 b"
-            box_subtext = "Lorem ipsum dolor set ami"
-            
-            self.drawBox(box_x, box_y, box_text, box_subtext)
-            
-            box_x += (self.w - 64) / 5
+    def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
+        x = 32
+        y = y - height - spacing
+        width = self.w / 5 - 20
 
-    
-    def drawBox(self, x, y, heading, subtext) -> None:
-        box_width = self.w / 5 - 20
-        box_height = 60
+        for item in data:
+            self.drawBox(heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
+            x += (self.w - 64) / 5
+        return
 
+    def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
         self.canvas.setStrokeColor(HexColor("#ffffff"))
         self.canvas.setFillColor(HexColor("#f5f5f5"))
-        self.canvas.rect(x, y, box_width, box_height, fill=True)
-        
+        self.canvas.rect(x, y, width, height, fill=True)
+
         self.style.fontSize = 14
         heading_text = Paragraph(heading, style=self.style)
-        heading_text.wrapOn(self.canvas, box_width, box_height)
-        heading_text.drawOn(self.canvas, x + 10, y + box_height - heading_text.height - 12)
+        heading_text.wrapOn(self.canvas, width, height)
+        heading_text.drawOn(self.canvas, x + 10, y +
+                            height - heading_text.height - 12)
 
         self.style.fontSize = 5
         subtext_text = Paragraph(subtext, style=self.style)
-        subtext_text.wrapOn(self.canvas, box_width - 20, box_height - heading_text.height - 10)
+        subtext_text.wrapOn(self.canvas, width - 20,
+                            height - heading_text.height - 10)
         subtext_text.drawOn(self.canvas, x + 10, y + 10)
 
-
     def addFooter(self) -> None:
-        self.canvas.setFont(psfontname='Times-Roman', size=12)
-        self.canvas.drawString(self.w - 72, 32, f'Page {self.pagesCount}.')
+        pageNumber = Paragraph(f'Page {self.pagesCount}.', style=self.style)
+        pageNumber.wrapOn(self.canvas, 72, 72)
+        pageNumber.drawOn(canvas=self.canvas, x=self.w - 72, y=20)
 
     def newPage(self) -> None:
         if not hasattr(self, 'canvas'):
-            # Create first page
             self.pagesCount = 1
-            self.canvas = Canvas(self.filepath, pagesize=A4)
+            self.canvas = Canvas(self.path, pagesize=A4)
         else:
             self.canvas.showPage()
             self.pagesCount += 1
