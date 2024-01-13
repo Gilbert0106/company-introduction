@@ -23,6 +23,7 @@ class Report(object):
             self.path = self.createPath(ticker=self.company.getSymbol())
             self.style = self.createStyle(
                 fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF")
+            self.margin = 32
         except Exception as e:
             raise Exception(e)
 
@@ -59,34 +60,34 @@ class Report(object):
         self.style.textColor = HexColor("#666666")
         p = Paragraph(date.today().strftime("%dth of %B %Y")
                       + ", Introduction of:", style=self.style)
-        p.wrapOn(self.canvas, self.w - 64, self.h)
-        p.drawOn(self.canvas, 32, self.h - p.height - 25)
+        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
+        p.drawOn(self.canvas, self.margin, self.h - p.height - 25)
 
         self.style.fontSize = 20
         self.style.textColor = HexColor("#000000")
         p = Paragraph("%s (%s)" %
                       (self.company.getName(), self.company.getSymbol()), style=self.style)
-        p.wrapOn(self.canvas, self.w - 64, self.h)
-        p.drawOn(self.canvas, 32, self.h - p.height - 45)
+        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
+        p.drawOn(self.canvas, self.margin, self.h - p.height - 45)
 
         return self.h - p.height - 45
 
     def addBusinessSummary(self, y: int) -> int:
         self.style.fontSize = 9
         p = Paragraph(self.company.getSummary(), style=self.style)
-        p.wrapOn(canv=self.canvas, aW=self.w - 64, aH=self.h - y - 32)
-        p.drawOn(canvas=self.canvas, x=32, y=self.h - y - p.height)
+        p.wrapOn(canv=self.canvas, aW=self.w - self.margin * 2, aH=self.h - y - self.margin)
+        p.drawOn(canvas=self.canvas, x=self.margin, y=self.h - y - p.height)
 
         return self.h - y - p.height
 
     def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
-        x = 32
+        x = self.margin
         y = y - height - spacing
         width = self.w / len(data) - 100 / len(data)
 
         for item in data:
             self.drawBox(heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
-            x += (self.w - 64) / len(data)
+            x += (self.w - self.margin * 2) / len(data)
         return
 
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
