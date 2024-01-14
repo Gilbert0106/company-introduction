@@ -18,14 +18,16 @@ class Report(object):
 
     w, h = A4
 
-    def __init__(self, company: CompanyApi) -> None:
+    def __init__(self, company: CompanyApi, overwrite: bool) -> None:
         self.company = company
 
         try:
-            self.path = self.createPath(ticker=self.company.getSymbol())
+            self.path = self.createPath(
+                ticker=self.company.getSymbol(), overwrite=overwrite
+            )
             self.style = self.createStyle(
-                fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF")
-            self.margin = 32
+                fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF"
+            )
         except Exception as e:
             raise Exception(e)
 
@@ -33,15 +35,17 @@ class Report(object):
         self.addTitle()
         self.y = self.addBusinessSummary(80)
         self.y = self.addBoxColumn(
-            data=self.company.getIntroductoryMetrics(), y=self.y)
+            data=self.company.getIntroductoryMetrics(), y=self.y
+        )
         self.addBarChart(data=self.company.getBarChartData(), y=self.y)
 
-    def createPath(self, ticker: str) -> str:
+    def createPath(self, ticker: str, overwrite: bool) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
 
-        if os.path.isfile(path=filepath):
+        if os.path.isfile(path=filepath) and not overwrite:
             raise Exception(
-                "A report for ticker " + ticker + " has already been generated today")
+                "A report for ticker " + ticker + " has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite."
+            )
 
         return filepath
 
@@ -49,9 +53,12 @@ class Report(object):
         if not os.path.isfile(path=fontPath):
             raise Exception("The font can not be loaded from: " + fontPath)
 
+        self.margin = 32
+
         # Register font
         pdfmetrics.registerFont(
-            TTFont(name=fontName, filename=fontPath))
+            TTFont(name=fontName, filename=fontPath)
+        )
 
         # Set style sheet
         style = getSampleStyleSheet()['Normal']
@@ -104,8 +111,7 @@ class Report(object):
 
         return self.addText(text=text, size=9, color="#666666", x=x, y=y)
 
-    def addText(self, x: int, y: int, text: str, size: int, color: str = None, aW: int=None, aH: int=None) -> Paragraph:
-        
+    def addText(self, x: int, y: int, text: str, size: int, color: str = None, aW: int = None, aH: int = None) -> Paragraph:
         if color is None:
             color = "#000000"
         if aW is None:
@@ -122,11 +128,15 @@ class Report(object):
         return p.height
 
     def addTitle(self) -> int:
-        self.addHelpText(text=date.today().strftime("%dth of %B %Y")
-                         + ", Introduction of:",  y=self.h - 25)
+        self.addHelpText(
+            text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",  
+            y=self.h - 25
+        )
 
-        self.addHeading1(text="%s (%s)" %
-                         (self.company.getName(), self.company.getSymbol()), y=self.h - 45)
+        self.addHeading1(
+            text="%s (%s)" % (self.company.getName(), self.company.getSymbol()), 
+            y=self.h - 45
+        )
 
         return self.h - 70
 
@@ -140,7 +150,13 @@ class Report(object):
 
         for item in data:
             self.drawBox(
-                heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
+                heading=item['value'],
+                subtext=item['description'], 
+                x=x, 
+                y=y, 
+                height=height, 
+                width=width
+            )
             x += (self.w - self.margin * 2) / len(data)
 
         return y
@@ -148,20 +164,49 @@ class Report(object):
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
         self.canvas.setStrokeColor(HexColor("#ffffff"))
         self.canvas.setFillColor(HexColor("#f5f5f5"))
-        self.canvas.rect(x, y, width, height, fill=True)
+        
+        self.canvas.rect(
+            x=x,
+            y=y,
+            width=width,
+            height=height, 
+            fill=True
+        )
 
-        self.addText(x=x + 10, y=y + height - 15, text=heading, size=14)
-        self.addText(x=x + 10, y=y + 20, text=subtext, size=5, aW=width - 20)
+        self.addText(
+            x=x + 10,
+            y=y + height - 15,
+            text=heading, 
+            size=14
+        )
+
+        self.addText(
+            x=x + 10,
+            y=y + 20,
+            text=subtext,
+            size=5,
+            aW=width - 20
+        )
 
     def addBarChart(self, data: list, y: int) -> None:
         # Add a heading 2
-        headingHeight = self.addHeading2(text="Figure 1: Share price over time", x=self.margin, y=y - 40)
+        headingHeight = self.addHeading2(
+            text="Figure 1: Share price over time.", 
+            x=self.margin, 
+            y=y - 40
+        )
 
         # Add helptext
-        helptextHeight = self.addHelpText(text="Lorem ipsum dolor set ami", y= y - headingHeight - 50)
+        self.addHelpText(
+            text="Lorem ipsum dolor set ami",
+            y=y - headingHeight - 50
+        )
 
         # Create a ReportLab Drawing object
-        drawing = Drawing(self.w - self.margin * 2, 200)
+        drawing = Drawing(
+            width=self.w - self.margin * 2,
+            height=200
+        )
 
         # Create a bar chart
         chart = VerticalBarChart()
@@ -174,8 +219,17 @@ class Report(object):
         drawing.add(chart)
 
         # Draw the drawing on the canvas
-        drawing.wrapOn(self.canvas, self.w - self.margin * 4, chart.height)
-        drawing.drawOn(self.canvas, self.margin, self.margin * 2)
+        drawing.wrapOn(
+            canv=self.canvas, 
+            aW=self.w - self.margin * 4, 
+            aH=chart.height
+        )
+        
+        drawing.drawOn(
+            canvas=self.canvas,
+            x=self.margin,
+            y=self.margin * 2
+        )
 
     def save(self) -> None:
         self.canvas.save()
