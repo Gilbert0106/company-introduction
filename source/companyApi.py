@@ -39,6 +39,12 @@ class CompanyApi(object):
 
     def getSummary(self) -> str:
         return str(self.info['longBusinessSummary'])
+    
+    def getPE(self)->str:
+        if 'trailingPE' in self.info:
+            return str(round(self.info['trailingPE'], 2))
+        else: 
+            return 'N/A'
 
     def formatPercentage(self, number: int) -> str:
         return f'{round(number * 100, 2)} %'
@@ -66,7 +72,7 @@ class CompanyApi(object):
                 'description': 'EBITDA / total revenue.'
             },
             {
-                'value': str(round(self.info['trailingPE'], 2)),
+                'value': self.getPE(),
                 'description': 'Trailing Price/Earnings.'
             },
             {

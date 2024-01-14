@@ -9,7 +9,7 @@ def main():
     # Make sure correct usage of program
     if not len(sys.argv) == 2:
         sys.exit("Usage: python main.py [TICKER SYMBOL]")
-    elif len(sys.argv[1]) < 2 or len(sys.argv[1]) > 5:
+    elif len(sys.argv[1]) < 2 or len(sys.argv[1]) > 10:
         sys.exit("A valid ticker must be between 2 and 5 characters long.")
     elif not internetConnection():
         sys.exit("Make sure you are connected to the internet.")
