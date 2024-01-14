@@ -36,8 +36,6 @@ class Report(object):
             data=self.company.getIntroductoryMetrics(), y=self.y)
         self.addBarChart(data=self.company.getBarChartData(), y=self.y)
 
-        # Next page
-
     def createPath(self, ticker: str) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
 
@@ -76,31 +74,64 @@ class Report(object):
         pageNumber.wrapOn(self.canvas, 72, 72)
         pageNumber.drawOn(canvas=self.canvas, x=self.w - 72, y=20)
 
+    def addHeading2(self) -> None:
+        return
+
+    def addParagraph(self) -> None:
+        return
+
+    def addHeading1(self, text: str, y: int, x: int = None) -> int:
+        if x is None:
+            x = self.margin
+
+        return self.addText(text=text, size=20, x=x, y=y)
+
+    def addHeading2(self, text: str, y: int, x: int = None) -> int:
+        if x is None:
+            x = self.margin
+
+        return self.addText(text=text, size=16, x=x, y=y)
+
+    def addParagraph(self, text: str, y: int, x: int = None) -> int:
+        if x is None:
+            x = self.margin
+
+        return self.addText(text=text, size=9, x=x, y=y)
+
+    def addHelpText(self, text: str, y: int, x: int = None) -> int:
+        if x is None:
+            x = self.margin
+
+        return self.addText(text=text, size=9, color="#666666", x=x, y=y)
+
+    def addText(self, x: int, y: int, text: str, size: int, color: str = None, aW: int=None, aH: int=None) -> Paragraph:
+        
+        if color is None:
+            color = "#000000"
+        if aW is None:
+            aW = self.w - x - self.margin
+        if aH is None:
+            aH = self.h
+
+        self.style.fontSize = size
+        self.style.textColor = HexColor(color)
+        p = Paragraph(text, style=self.style)
+        p.wrapOn(self.canvas, aW, aH)
+        p.drawOn(self.canvas, x, y - p.height)
+
+        return p.height
+
     def addTitle(self) -> int:
-        self.style.fontSize = 9
-        self.style.textColor = HexColor("#666666")
-        p = Paragraph(date.today().strftime("%dth of %B %Y")
-                      + ", Introduction of:", style=self.style)
-        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
-        p.drawOn(self.canvas, self.margin, self.h - p.height - 25)
+        self.addHelpText(text=date.today().strftime("%dth of %B %Y")
+                         + ", Introduction of:",  y=self.h - 25)
 
-        self.style.fontSize = 20
-        self.style.textColor = HexColor("#000000")
-        p = Paragraph("%s (%s)" %
-                      (self.company.getName(), self.company.getSymbol()), style=self.style)
-        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
-        p.drawOn(self.canvas, self.margin, self.h - p.height - 45)
+        self.addHeading1(text="%s (%s)" %
+                         (self.company.getName(), self.company.getSymbol()), y=self.h - 45)
 
-        return self.h - p.height - 45
+        return self.h - 70
 
     def addBusinessSummary(self, y: int) -> int:
-        self.style.fontSize = 9
-        p = Paragraph(self.company.getSummary(), style=self.style)
-        p.wrapOn(canv=self.canvas, aW=self.w -
-                 self.margin * 2, aH=self.h - y - self.margin)
-        p.drawOn(canvas=self.canvas, x=self.margin, y=self.h - y - p.height)
-
-        return self.h - y - p.height
+        return self.h - y - self.addParagraph(self.company.getSummary(), y=self.h - y)
 
     def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
@@ -111,7 +142,7 @@ class Report(object):
             self.drawBox(
                 heading=item['value'], subtext=item['description'], x=x, y=y, height=height, width=width)
             x += (self.w - self.margin * 2) / len(data)
-        
+
         return y
 
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
@@ -119,31 +150,15 @@ class Report(object):
         self.canvas.setFillColor(HexColor("#f5f5f5"))
         self.canvas.rect(x, y, width, height, fill=True)
 
-        self.style.fontSize = 14
-        heading_text = Paragraph(heading, style=self.style)
-        heading_text.wrapOn(self.canvas, width, height)
-        heading_text.drawOn(self.canvas, x + 10, y +
-                            height - heading_text.height - 12)
-
-        self.style.fontSize = 5
-        subtext_text = Paragraph(subtext, style=self.style)
-        subtext_text.wrapOn(self.canvas, width - 20,
-                            height - heading_text.height - 10)
-        subtext_text.drawOn(self.canvas, x + 10, y + 10)
+        self.addText(x=x + 10, y=y + height - 15, text=heading, size=14)
+        self.addText(x=x + 10, y=y + 20, text=subtext, size=5, aW=width - 20)
 
     def addBarChart(self, data: list, y: int) -> None:
-        # Add a heading
-        self.style.fontSize = 16
-        heading = Paragraph("Bar chart heading", self.style)
-        heading.wrapOn(self.canvas, self.w, self.h)
-        heading.drawOn(self.canvas, self.margin, y - 40)
+        # Add a heading 2
+        headingHeight = self.addHeading2(text="Figure 1: Share price over time", x=self.margin, y=y - 40)
 
         # Add helptext
-        self.style.fontSize = 9
-        self.style.textColor = HexColor("#666666")
-        p = Paragraph("Lorem ipsum dolor set ami", style=self.style)
-        p.wrapOn(self.canvas, self.w - self.margin * 2, self.h)
-        p.drawOn(self.canvas, self.margin, y - heading.height - p.height - 40)
+        helptextHeight = self.addHelpText(text="Lorem ipsum dolor set ami", y= y - headingHeight - 50)
 
         # Create a ReportLab Drawing object
         drawing = Drawing(self.w - self.margin * 2, 200)
@@ -151,7 +166,7 @@ class Report(object):
         # Create a bar chart
         chart = VerticalBarChart()
         chart.width = self.w - self.margin * 3
-        chart.height = y - self.margin * 2 - heading.height - 100
+        chart.height = y - self.margin * 2 - headingHeight - 100
         chart.data = [[x[1] for x in data]]
         chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
 
