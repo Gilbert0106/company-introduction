@@ -86,8 +86,9 @@ class CompanyApi(object):
         data = self.handle.history(period="max", interval="3mo")['Close'].items()
 
         # Get comparable index during same time? Like NASDAQ or S&P 500
+        # Get proportians between first value of each data set and translate comparison by iterating all values in multiplying by the same proportion
 
         return [
-            (date.strftime('%Y-%m'), closing_price) if i == 1 or i % 25 == 0 else ('', closing_price)
+            (date.strftime('%Y-%m'), closing_price) if (i + 10) % 15 == 0 else ('', closing_price)
             for i, (date, closing_price) in enumerate(data, 1)
         ]
