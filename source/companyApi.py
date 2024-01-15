@@ -83,4 +83,4 @@ class CompanyApi(object):
 
     def getBarChartData(self) -> list:
         # Example data for the bar chart
-        return [(1, 20), (2, 50), (3, 30), (4, 40), (5, 10)]
+        return [(1, 25), (2, 50), (3, 30), (4, 40), (5, 25), (2, 50), (3, 30), (4, 40), (5, 30)]

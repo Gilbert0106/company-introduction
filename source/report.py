@@ -2,6 +2,7 @@ import os.path
 from datetime import date
 
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -214,6 +215,8 @@ class Report(object):
         chart.height = y - self.margin * 2 - headingHeight - 100
         chart.data = [[x[1] for x in data]]
         chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
+        chart.bars[0].fillColor = colors.black
+        chart.categoryAxis.style='stacked'
 
         # Add the bar chart to the drawing
         drawing.add(chart)
@@ -224,7 +227,7 @@ class Report(object):
             aW=self.w - self.margin * 4, 
             aH=chart.height
         )
-        
+
         drawing.drawOn(
             canvas=self.canvas,
             x=self.margin,
