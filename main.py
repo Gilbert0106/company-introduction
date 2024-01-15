@@ -14,12 +14,12 @@ def main():
     )
 
     parser.add_argument(
-        name_or_flags="ticker_symbol",
+        "ticker_symbol",
         help="The unique ticker symbol of the company you want to create a report on"
     )
 
     parser.add_argument(
-        name_or_flags="--overwrite",
+        "--overwrite",
         action="store_true",
         help="overwrite existing report from today"
     )
