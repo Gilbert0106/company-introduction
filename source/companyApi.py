@@ -39,11 +39,11 @@ class CompanyApi(object):
 
     def getSummary(self) -> str:
         return str(self.info['longBusinessSummary'])
-    
-    def getPE(self)->str:
+
+    def getPE(self) -> str:
         if 'trailingPE' in self.info:
             return str(round(self.info['trailingPE'], 2))
-        else: 
+        else:
             return 'N/A'
 
     def formatPercentage(self, number: int) -> str:
@@ -81,6 +81,13 @@ class CompanyApi(object):
             }
         ]
 
-    def getBarChartData(self) -> list:
-        # Example data for the bar chart
-        return [(1, 25), (2, 50), (3, 30), (4, 40), (5, 25), (2, 50), (3, 30), (4, 40), (5, 30)]
+    def getHistoricalStockData(self) -> list:
+        # Get historical data using the history function
+        data = self.handle.history(period="max", interval="3mo")['Close'].items()
+
+        # Get comparable index during same time? Like NASDAQ or S&P 500
+
+        return [
+            (date.strftime('%Y-%m'), closing_price) if i == 1 or i % 25 == 0 else ('', closing_price)
+            for i, (date, closing_price) in enumerate(data, 1)
+        ]
