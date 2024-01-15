@@ -9,8 +9,9 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import HexColor
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
-from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.shapes import Drawing, Circle
 from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.linecharts import HorizontalLineChart
 
 from source.companyApi import CompanyApi
 
@@ -38,7 +39,7 @@ class Report(object):
         self.y = self.addBoxColumn(
             data=self.company.getIntroductoryMetrics(), y=self.y
         )
-        self.addBarChart(data=self.company.getBarChartData(), y=self.y)
+        self.addLineChart(data=self.company.getHistoricalStockData(), y=self.y)
 
     def createPath(self, ticker: str, overwrite: bool) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
@@ -233,6 +234,77 @@ class Report(object):
             x=self.margin,
             y=self.margin * 2
         )
+
+    def addLineChart(self, data: list, y: int) -> None:
+        # Add a heading 2
+        headingHeight = self.addHeading2(
+            text="Figure 1: Share price over time.", 
+            x=self.margin, 
+            y=y - 40
+        )
+
+        # Add helptext
+        self.addHelpText(
+            text="Lorem ipsum dolor set ami",
+            y=y - headingHeight - 50
+        )
+
+        # Create a bar chart
+        chart = HorizontalLineChart()
+        chart.width = self.w - self.margin * 2
+        chart.height = y - self.margin * 2 - headingHeight - 100
+        
+        chart.data = [[x[1] for x in data]]
+        chart.fillColor = HexColor("#f5f5f5")
+
+        chart.valueAxis.valueStep = 50
+        chart.valueAxis.visible = False
+        chart.valueAxis.labels.fontName = 'Consola'
+
+        chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
+        chart.categoryAxis.labelAxisMode = 'low'
+        chart.categoryAxis.labels.fontName = 'Consola'
+
+
+        # Create a ReportLab Drawing object
+        drawing = Drawing(
+            width=self.w - self.margin * 2,
+            height=200
+        )
+
+        # Add the bar chart to the drawing
+        drawing.add(chart)
+
+        # Draw the drawing on the canvas
+        drawing.wrapOn(
+            canv=self.canvas, 
+            aW=self.w - self.margin * 4, 
+            aH=chart.height
+        )
+
+        drawing.drawOn(
+            canvas=self.canvas,
+            x=10,
+            y=self.margin * 2
+        )
+
+
+        # Draw labels with colored circles on the line chart
+        self.style.fontSize = 10
+        self.style.textColor = HexColor("#000000")
+        p = Paragraph("MSFT", style=self.style)
+        p.wrapOn(self.canvas, self.w, self.h)
+        p.drawOn(self.canvas, self.margin + 20, y - self.margin * 2 - headingHeight - 48)
+
+        p = Paragraph("S&P 500", style=self.style)
+        p.wrapOn(self.canvas, self.w, self.h)
+        p.drawOn(self.canvas, self.margin + 20, y - self.margin * 2 - headingHeight - 65)
+
+        self.canvas.setFillColor(colors.red)
+        self.canvas.circle(self.margin + 12, y - self.margin * 2 - headingHeight - 40, 3, stroke=1, fill=1)
+
+        self.canvas.setFillColor(HexColor("#F6BE00"))
+        self.canvas.circle(self.margin + 12, y - self.margin * 2 - headingHeight - 57, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()
