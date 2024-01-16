@@ -39,7 +39,14 @@ class Report(object):
         self.y = self.addBoxColumn(
             data=self.company.getIntroductoryMetrics(), y=self.y
         )
-        self.addLineChart(data=self.company.getHistoricalStockData(), y=self.y)
+        self.addLineChart(
+            data=self.company.getHistoricalPriceData(
+                indexes=[
+                    '^GSPC', 
+                    '^DJI']
+            ), 
+            y=self.y
+        )
 
     def createPath(self, ticker: str, overwrite: bool) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
@@ -238,7 +245,7 @@ class Report(object):
     def addLineChart(self, data: list, y: int) -> None:
         # Add a heading 2
         headingHeight = self.addHeading2(
-            text="Figure 1: Share price over the last 5 years.", 
+            text="Figure 1: Share price over the last 10 years.", 
             x=self.margin, 
             y=y - 40
         )
@@ -249,17 +256,19 @@ class Report(object):
             y=y - headingHeight - 50
         )
 
-        msft_data = [closing_price for _, closing_price in data['MSFT']]
-        gspc_data = [closing_price for _, closing_price in data['^GSPC']]
-        dji_data = [closing_price for _, closing_price in data['^DJI']]
-
         # Create a bar chart
         chart = HorizontalLineChart()
         chart.width = self.w - self.margin * 3
         chart.height = y - self.margin * 2 - headingHeight - 100
+
+        chart.data = list(data.values())
+
+        line_colors = ['#FF0000', '#F6BE00', '#0044CC']; 
+
+        for i, color in enumerate(line_colors):
+            line = chart.lines[i]
+            line.strokeColor = HexColor(color)
         
-        #chart.data = [data['MSFT'], data['^GSPC'], data['^DJI']]
-        chart.data = [msft_data, gspc_data, dji_data]
         chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
         chart.categoryAxis.visible = False
@@ -291,6 +300,8 @@ class Report(object):
         # Draw labels with colored circles on the line chart
         self.style.fontSize = 10
         self.style.textColor = HexColor("#000000")
+        self.canvas.setStrokeColor(HexColor("#000000"))
+
         p = Paragraph("MSFT", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
         p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 48)
@@ -299,12 +310,18 @@ class Report(object):
         p.wrapOn(self.canvas, self.w, self.h)
         p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 65)
 
-        self.canvas.setStrokeColor(HexColor("#000000"))
+        p = Paragraph(r"Dow Jones Industrial Avg.", style=self.style)
+        p.wrapOn(self.canvas, self.w, self.h)
+        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 82)
+
         self.canvas.setFillColor(colors.red)
         self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 40, 3, stroke=1, fill=1)
 
         self.canvas.setFillColor(HexColor("#F6BE00"))
         self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 57, 3, stroke=1, fill=1)
+
+        self.canvas.setFillColor(HexColor("#0044CC"))
+        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 74, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()
