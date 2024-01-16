@@ -1,4 +1,5 @@
 import yfinance as yf
+from datetime import datetime, timedelta
 
 
 class CompanyApi(object):
@@ -81,21 +82,24 @@ class CompanyApi(object):
             }
         ]
 
-    def getHistoricalPriceData(self) -> dict:
+    def getHistoricalPriceData(self, tickers: list, start_date: str = None) -> dict:
+        
+        if start_date == None: 
+            start_date = (datetime.now() - timedelta(days=10 * 365)).strftime('%Y-%m-%d')
 
         data = {}
 
-        # Add ticker data
-        ticker_data = yf.download(self.getSymbol(), start="2018-01-01", interval="1mo")['Close']
-        ticker_start_date = ticker_data.index[0]
-        x = 100 / ticker_data.iloc[0] 
-        data[self.getSymbol()] = [(date.strftime('%Y-%m'), closing_price * x - 100) for date, closing_price in zip(ticker_data.index, ticker_data)]
+        tickers.append(self.getSymbol())
 
-        indexes = ['^GSPC', '^DJI']
-        
-        for index in indexes: 
-            index_data = yf.download(index, start=ticker_start_date, interval="1mo")['Close']
-            x = 100 / index_data.iloc[0] 
-            data[index] = [(date.strftime('%Y-%m'), closing_price * x - 100) for date, closing_price in zip(index_data.index, index_data)]
+        # Do the same for all indexes passed
+        for ticker in tickers: 
+            # Download tickee data
+            ticker_data = yf.download(ticker, start=start_date, interval="1mo")['Close']
+
+            # Calulate the factor to apply on all values
+            x = 100 / ticker_data.iloc[0] 
+
+            # Format data and put it in dict 
+            data[ticker] = [(date.strftime('%Y-%m'), closing_price * x - 100)[1] for date, closing_price in zip(ticker_data.index, ticker_data)]
 
         return data
