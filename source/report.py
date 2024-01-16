@@ -238,32 +238,31 @@ class Report(object):
     def addLineChart(self, data: list, y: int) -> None:
         # Add a heading 2
         headingHeight = self.addHeading2(
-            text="Figure 1: Share price over time.", 
+            text="Figure 1: Share price over the last 5 years.", 
             x=self.margin, 
             y=y - 40
         )
 
         # Add helptext
         self.addHelpText(
-            text="Lorem ipsum dolor set ami",
+            text="(%) Return Plotted on the Y-axis",
             y=y - headingHeight - 50
         )
 
+        msft_data = [closing_price for _, closing_price in data['MSFT']]
+        gspc_data = [closing_price for _, closing_price in data['^GSPC']]
+        dji_data = [closing_price for _, closing_price in data['^DJI']]
+
         # Create a bar chart
         chart = HorizontalLineChart()
-        chart.width = self.w - self.margin * 2
+        chart.width = self.w - self.margin * 3
         chart.height = y - self.margin * 2 - headingHeight - 100
         
-        chart.data = [[x[1] for x in data]]
+        #chart.data = [data['MSFT'], data['^GSPC'], data['^DJI']]
+        chart.data = [msft_data, gspc_data, dji_data]
         chart.fillColor = HexColor("#f5f5f5")
-
-        chart.valueAxis.valueStep = 50
-        chart.valueAxis.visible = False
         chart.valueAxis.labels.fontName = 'Consola'
-
-        chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
-        chart.categoryAxis.labelAxisMode = 'low'
-        chart.categoryAxis.labels.fontName = 'Consola'
+        chart.categoryAxis.visible = False
 
 
         # Create a ReportLab Drawing object
@@ -278,13 +277,13 @@ class Report(object):
         # Draw the drawing on the canvas
         drawing.wrapOn(
             canv=self.canvas, 
-            aW=self.w - self.margin * 4, 
+            aW=self.w - self.margin * 6, 
             aH=chart.height
         )
 
         drawing.drawOn(
             canvas=self.canvas,
-            x=10,
+            x=32,
             y=self.margin * 2
         )
 
@@ -294,17 +293,18 @@ class Report(object):
         self.style.textColor = HexColor("#000000")
         p = Paragraph("MSFT", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 20, y - self.margin * 2 - headingHeight - 48)
+        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 48)
 
-        p = Paragraph("S&P 500", style=self.style)
+        p = Paragraph(r"S&amp;P 500", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 20, y - self.margin * 2 - headingHeight - 65)
+        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 65)
 
+        self.canvas.setStrokeColor(HexColor("#000000"))
         self.canvas.setFillColor(colors.red)
-        self.canvas.circle(self.margin + 12, y - self.margin * 2 - headingHeight - 40, 3, stroke=1, fill=1)
+        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 40, 3, stroke=1, fill=1)
 
         self.canvas.setFillColor(HexColor("#F6BE00"))
-        self.canvas.circle(self.margin + 12, y - self.margin * 2 - headingHeight - 57, 3, stroke=1, fill=1)
+        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 57, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()
