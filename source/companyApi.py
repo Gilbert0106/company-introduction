@@ -81,14 +81,21 @@ class CompanyApi(object):
             }
         ]
 
-    def getHistoricalStockData(self) -> list:
-        # Get historical data using the history function
-        data = self.handle.history(period="max", interval="3mo")['Close'].items()
+    def getHistoricalPriceData(self) -> dict:
 
-        # Get comparable index during same time? Like NASDAQ or S&P 500
-        # Get proportians between first value of each data set and translate comparison by iterating all values in multiplying by the same proportion
+        data = {}
 
-        return [
-            (date.strftime('%Y-%m'), closing_price) if (i + 10) % 15 == 0 else ('', closing_price)
-            for i, (date, closing_price) in enumerate(data, 1)
-        ]
+        # Add ticker data
+        ticker_data = yf.download(self.getSymbol(), start="2018-01-01", interval="1mo")['Close']
+        ticker_start_date = ticker_data.index[0]
+        x = 100 / ticker_data.iloc[0] 
+        data[self.getSymbol()] = [(date.strftime('%Y-%m'), closing_price * x - 100) for date, closing_price in zip(ticker_data.index, ticker_data)]
+
+        indexes = ['^GSPC', '^DJI']
+        
+        for index in indexes: 
+            index_data = yf.download(index, start=ticker_start_date, interval="1mo")['Close']
+            x = 100 / index_data.iloc[0] 
+            data[index] = [(date.strftime('%Y-%m'), closing_price * x - 100) for date, closing_price in zip(index_data.index, index_data)]
+
+        return data
