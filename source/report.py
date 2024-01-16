@@ -41,10 +41,11 @@ class Report(object):
         )
         self.addLineChart(
             data=self.company.getHistoricalPriceData(
-                indexes=[
-                    '^GSPC', 
-                    '^DJI']
-            ), 
+                tickers=[
+                    '^GSPC',
+                    '^DJI'
+                ]
+            ),
             y=self.y
         )
 
@@ -53,7 +54,8 @@ class Report(object):
 
         if os.path.isfile(path=filepath) and not overwrite:
             raise Exception(
-                "A report for ticker " + ticker + " has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite."
+                "A report for ticker " + ticker +
+                " has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite."
             )
 
         return filepath
@@ -138,12 +140,13 @@ class Report(object):
 
     def addTitle(self) -> int:
         self.addHelpText(
-            text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",  
+            text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",
             y=self.h - 25
         )
 
         self.addHeading1(
-            text="%s (%s)" % (self.company.getName(), self.company.getSymbol()), 
+            text="%s (%s)" % (self.company.getName(),
+                              self.company.getSymbol()),
             y=self.h - 45
         )
 
@@ -160,10 +163,10 @@ class Report(object):
         for item in data:
             self.drawBox(
                 heading=item['value'],
-                subtext=item['description'], 
-                x=x, 
-                y=y, 
-                height=height, 
+                subtext=item['description'],
+                x=x,
+                y=y,
+                height=height,
                 width=width
             )
             x += (self.w - self.margin * 2) / len(data)
@@ -173,19 +176,19 @@ class Report(object):
     def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
         self.canvas.setStrokeColor(HexColor("#ffffff"))
         self.canvas.setFillColor(HexColor("#f5f5f5"))
-        
+
         self.canvas.rect(
             x=x,
             y=y,
             width=width,
-            height=height, 
+            height=height,
             fill=True
         )
 
         self.addText(
             x=x + 10,
             y=y + height - 15,
-            text=heading, 
+            text=heading,
             size=14
         )
 
@@ -200,8 +203,8 @@ class Report(object):
     def addBarChart(self, data: list, y: int) -> None:
         # Add a heading 2
         headingHeight = self.addHeading2(
-            text="Figure 1: Share price over time.", 
-            x=self.margin, 
+            text="Figure 1: Share price over time.",
+            x=self.margin,
             y=y - 40
         )
 
@@ -224,15 +227,15 @@ class Report(object):
         chart.data = [[x[1] for x in data]]
         chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
         chart.bars[0].fillColor = colors.black
-        chart.categoryAxis.style='stacked'
+        chart.categoryAxis.style = 'stacked'
 
         # Add the bar chart to the drawing
         drawing.add(chart)
 
         # Draw the drawing on the canvas
         drawing.wrapOn(
-            canv=self.canvas, 
-            aW=self.w - self.margin * 4, 
+            canv=self.canvas,
+            aW=self.w - self.margin * 4,
             aH=chart.height
         )
 
@@ -245,8 +248,8 @@ class Report(object):
     def addLineChart(self, data: list, y: int) -> None:
         # Add a heading 2
         headingHeight = self.addHeading2(
-            text="Figure 1: Share price over the last 10 years.", 
-            x=self.margin, 
+            text="Figure 1: Share price over the last 10 years.",
+            x=self.margin,
             y=y - 40
         )
 
@@ -263,16 +266,15 @@ class Report(object):
 
         chart.data = list(data.values())
 
-        line_colors = ['#FF0000', '#F6BE00', '#0044CC']; 
+        line_colors = ['#FF0000', '#F6BE00', '#0044CC']
 
         for i, color in enumerate(line_colors):
             line = chart.lines[i]
             line.strokeColor = HexColor(color)
-        
+
         chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
         chart.categoryAxis.visible = False
-
 
         # Create a ReportLab Drawing object
         drawing = Drawing(
@@ -285,8 +287,8 @@ class Report(object):
 
         # Draw the drawing on the canvas
         drawing.wrapOn(
-            canv=self.canvas, 
-            aW=self.w - self.margin * 6, 
+            canv=self.canvas,
+            aW=self.w - self.margin * 6,
             aH=chart.height
         )
 
@@ -296,7 +298,6 @@ class Report(object):
             y=self.margin * 2
         )
 
-
         # Draw labels with colored circles on the line chart
         self.style.fontSize = 10
         self.style.textColor = HexColor("#000000")
@@ -304,24 +305,30 @@ class Report(object):
 
         p = Paragraph("MSFT", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 48)
+        p.drawOn(self.canvas, self.margin + 42, y -
+                 self.margin * 2 - headingHeight - 48)
 
         p = Paragraph(r"S&amp;P 500", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 65)
+        p.drawOn(self.canvas, self.margin + 42, y -
+                 self.margin * 2 - headingHeight - 65)
 
         p = Paragraph(r"Dow Jones Industrial Avg.", style=self.style)
         p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y - self.margin * 2 - headingHeight - 82)
+        p.drawOn(self.canvas, self.margin + 42, y -
+                 self.margin * 2 - headingHeight - 82)
 
         self.canvas.setFillColor(colors.red)
-        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 40, 3, stroke=1, fill=1)
+        self.canvas.circle(self.margin + 32, y - self.margin *
+                           2 - headingHeight - 40, 3, stroke=1, fill=1)
 
         self.canvas.setFillColor(HexColor("#F6BE00"))
-        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 57, 3, stroke=1, fill=1)
+        self.canvas.circle(self.margin + 32, y - self.margin *
+                           2 - headingHeight - 57, 3, stroke=1, fill=1)
 
         self.canvas.setFillColor(HexColor("#0044CC"))
-        self.canvas.circle(self.margin + 32, y - self.margin * 2 - headingHeight - 74, 3, stroke=1, fill=1)
+        self.canvas.circle(self.margin + 32, y - self.margin *
+                           2 - headingHeight - 74, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()
