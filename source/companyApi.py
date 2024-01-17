@@ -82,24 +82,42 @@ class CompanyApi(object):
             }
         ]
 
+
+        self.getHistoricalPriceData(
+            tickers=[
+                {
+                    'ticker': '^GSPC',
+                    'name': 'S&amp;P 500',
+                    'color': '#F6BE00',
+                },
+                {
+                    'ticker': '^DJI',
+                    'name': 'Dow Jones Industrial Avg.',
+                    'color': '#0044CC',
+                }
+            ]
+        ),
+
+
     def getHistoricalPriceData(self, tickers: list, start_date: str = None) -> dict:
         
         if start_date == None: 
             start_date = (datetime.now() - timedelta(days=10 * 365)).strftime('%Y-%m-%d')
 
-        data = {}
+        tickers.insert(0, {
+            'ticker': self.getSymbol(), 
+            'color': '#FF0000', 
+            'name': self.getName(),
+        })
 
-        tickers.append(self.getSymbol())
-
-        # Do the same for all indexes passed
-        for ticker in tickers: 
-            # Download tickee data
-            ticker_data = yf.download(ticker, start=start_date, interval="1mo")['Close']
+        for ticker in tickers:
+            # Download ticker data
+            ticker_data = yf.download(ticker['ticker'], start=start_date, interval="1mo")['Close']
 
             # Calulate the factor to apply on all values
             x = 100 / ticker_data.iloc[0] 
 
             # Format data and put it in dict 
-            data[ticker] = [(date.strftime('%Y-%m'), closing_price * x - 100)[1] for date, closing_price in zip(ticker_data.index, ticker_data)]
-
-        return data
+            ticker['data'] = [(date.strftime('%Y-%m'), closing_price * x - 100)[1] for date, closing_price in zip(ticker_data.index, ticker_data)]
+   
+        return tickers

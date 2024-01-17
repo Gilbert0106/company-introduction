@@ -40,10 +40,18 @@ class Report(object):
             data=self.company.getIntroductoryMetrics(), y=self.y
         )
         self.addLineChart(
-            data=self.company.getHistoricalPriceData(
-               tickers=[
-                    '^GSPC',
-                    '^DJI'
+            profiles=self.company.getHistoricalPriceData(
+                tickers=[
+                    {
+                        'ticker': '^GSPC',
+                        'name': 'S&amp;P 500',
+                        'color': '#F6BE00',
+                    },
+                    {
+                        'ticker': '^DJI',
+                        'name': 'Dow Jones Industrial Avg.',
+                        'color': '#0044CC',
+                    }
                 ]
             ),
             y=self.y
@@ -94,18 +102,18 @@ class Report(object):
         self.canvas.line(32, 45, self.w - 32, 46)
 
         self.addText(
-                text="Authored by Simon, https://github.com/Gilbert0106/company-introduction", 
-                size=9, 
-                color="#666666", 
-                x= self.w - 380, 
-                y=32.5,
-                aW=self.w
+            text="Authored by Simon, https://github.com/Gilbert0106/company-introduction",
+            size=9,
+            color="#666666",
+            x=self.w - 380,
+            y=32.5,
+            aW=self.w
         )
 
-        self.addText(   
-            text=f'Page {self.pagesCount}.', 
-            size=9, 
-            x=32, 
+        self.addText(
+            text=f'Page {self.pagesCount}.',
+            size=9,
+            x=32,
             y=32,
         )
 
@@ -262,7 +270,7 @@ class Report(object):
             y=self.margin * 2
         )
 
-    def addLineChart(self, data: list, y: int) -> None:
+    def addLineChart(self, profiles: list, y: int) -> None:
         # Add a heading 2
         headingHeight = self.addHeading2(
             text="Figure 1: Share price over the last 10 years.",
@@ -281,13 +289,10 @@ class Report(object):
         chart.width = self.w - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 100
 
-        chart.data = list(data.values())
+        chart.data = [profile.get('data', None) for profile in profiles]
 
-        line_colors = ['#FF0000', '#F6BE00', '#0044CC']
-
-        for i, color in enumerate(line_colors):
-            line = chart.lines[i]
-            line.strokeColor = HexColor(color)
+        for i, profile in enumerate(profiles):
+            chart.lines[i].strokeColor = HexColor(profile['color'])
 
         chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
@@ -315,37 +320,20 @@ class Report(object):
             y=self.margin * 2
         )
 
-        # Draw labels with colored circles on the line chart
         self.style.fontSize = 10
         self.style.textColor = HexColor("#000000")
-        self.canvas.setStrokeColor(HexColor("#000000"))
 
-        p = Paragraph("MSFT", style=self.style)
-        p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y -
-                 self.margin * 2 - headingHeight - 48)
+        for i, profile in enumerate(profiles): 
+            # Draw labels with colored circles on the line chart
+            self.canvas.setStrokeColor(HexColor(profile['color']))
+            p = Paragraph(profile['name'], style=self.style)
+            p.wrapOn(self.canvas, self.w, self.h)
+            p.drawOn(self.canvas, self.margin + 42, y -
+                    self.margin * 2 - headingHeight - 48 - i * 17)
 
-        p = Paragraph(r"S&amp;P 500", style=self.style)
-        p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y -
-                 self.margin * 2 - headingHeight - 65)
-
-        p = Paragraph(r"Dow Jones Industrial Avg.", style=self.style)
-        p.wrapOn(self.canvas, self.w, self.h)
-        p.drawOn(self.canvas, self.margin + 42, y -
-                 self.margin * 2 - headingHeight - 82)
-
-        self.canvas.setFillColor(colors.red)
-        self.canvas.circle(self.margin + 32, y - self.margin *
-                           2 - headingHeight - 40, 3, stroke=1, fill=1)
-
-        self.canvas.setFillColor(HexColor("#F6BE00"))
-        self.canvas.circle(self.margin + 32, y - self.margin *
-                           2 - headingHeight - 57, 3, stroke=1, fill=1)
-
-        self.canvas.setFillColor(HexColor("#0044CC"))
-        self.canvas.circle(self.margin + 32, y - self.margin *
-                           2 - headingHeight - 74, 3, stroke=1, fill=1)
+            self.canvas.setFillColor(HexColor(profile['color']))
+            self.canvas.circle(self.margin + 32, y - self.margin *
+                            2 - headingHeight - 40 - i * 17, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()
