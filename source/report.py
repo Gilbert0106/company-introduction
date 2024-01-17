@@ -214,7 +214,7 @@ class Report(object):
             x=x + 10,
             y=y + height - 15,
             text=heading,
-            size=14
+            size=12
         )
 
         self.addText(
