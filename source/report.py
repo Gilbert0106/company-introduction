@@ -41,7 +41,7 @@ class Report(object):
         )
         self.addLineChart(
             data=self.company.getHistoricalPriceData(
-                tickers=[
+               tickers=[
                     '^GSPC',
                     '^DJI'
                 ]
@@ -88,9 +88,26 @@ class Report(object):
         self.addFooter()
 
     def addFooter(self) -> None:
-        pageNumber = Paragraph(f'Page {self.pagesCount}.', style=self.style)
-        pageNumber.wrapOn(self.canvas, 72, 72)
-        pageNumber.drawOn(canvas=self.canvas, x=self.w - 72, y=20)
+        self.canvas.setStrokeColorRGB(0, 0, 0)
+        self.canvas.setLineWidth(1)
+
+        self.canvas.line(32, 45, self.w - 32, 46)
+
+        self.addText(
+                text="Authored by Simon, https://github.com/Gilbert0106/company-introduction", 
+                size=9, 
+                color="#666666", 
+                x= self.w - 380, 
+                y=32.5,
+                aW=self.w
+        )
+
+        self.addText(   
+            text=f'Page {self.pagesCount}.', 
+            size=9, 
+            x=32, 
+            y=32,
+        )
 
     def addHeading2(self) -> None:
         return
@@ -255,13 +272,13 @@ class Report(object):
 
         # Add helptext
         self.addHelpText(
-            text="(%) Return Plotted on the Y-axis",
+            text="(%) Return Plotted along the Y-axis.",
             y=y - headingHeight - 50
         )
 
         # Create a bar chart
         chart = HorizontalLineChart()
-        chart.width = self.w - self.margin * 3
+        chart.width = self.w - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 100
 
         chart.data = list(data.values())
