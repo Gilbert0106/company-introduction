@@ -29,7 +29,7 @@ def main():
     # Make sure correct usage of program
     if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
         sys.exit("A valid ticker must be between 2 and 10 characters long.")
-    elif not internetConnection():
+    elif not check_internet_connection():
         sys.exit("Make sure you are connected to the internet.")
 
     # Initalize a new CompanyApi and Report
@@ -43,7 +43,7 @@ def main():
     report.save()
 
 
-def internetConnection():
+def check_internet_connection():
     # Check for internet connection
     try:
         requests.get("https://google.com", timeout=5)
