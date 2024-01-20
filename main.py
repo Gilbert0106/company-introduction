@@ -28,7 +28,7 @@ def main():
 
     # Make sure correct usage of program
     if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
-        sys.exit("A valid ticker must be between 2 and 10 characters long.")
+        sys.exit("A valid ticker must be between 3 and 9 characters long.")
     elif not check_internet_connection():
         sys.exit("Make sure you are connected to the internet.")
 

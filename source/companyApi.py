@@ -14,9 +14,9 @@ class CompanyApi(object):
             raise Exception(
                 ticker + " does not seem to be a valid company stock ticker.")
 
-        self.currency = self.getCurrency()
+        self.currency = self.get_currency()
 
-    def getCurrency(self) -> str:
+    def get_currency(self) -> str:
 
         currencySymbol = {
             'USD': '$',
@@ -81,22 +81,6 @@ class CompanyApi(object):
                 'description': 'Dividend yield.'
             }
         ]
-
-
-        self.getHistoricalPriceData(
-            tickers=[
-                {
-                    'ticker': '^GSPC',
-                    'name': 'S&amp;P 500',
-                    'color': '#F6BE00',
-                },
-                {
-                    'ticker': '^DJI',
-                    'name': 'Dow Jones Industrial Avg.',
-                    'color': '#0044CC',
-                }
-            ]
-        ),
 
 
     def getHistoricalPriceData(self, tickers: list, start_date: str = None) -> dict:
