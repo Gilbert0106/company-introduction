@@ -9,7 +9,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import HexColor
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph
-from reportlab.graphics.shapes import Drawing, Circle
+from reportlab.graphics.shapes import Drawing
 from reportlab.graphics.charts.barcharts import VerticalBarChart
 from reportlab.graphics.charts.linecharts import HorizontalLineChart
 
@@ -25,7 +25,7 @@ class Report(object):
 
         try:
             self.path = self.createPath(
-                ticker=self.company.getSymbol(), overwrite=overwrite
+                ticker=self.company.get_symbol(), overwrite=overwrite
             )
             self.style = self.createStyle(
                 fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF"
@@ -37,10 +37,10 @@ class Report(object):
         self.addTitle()
         self.y = self.addBusinessSummary(80)
         self.y = self.addBoxColumn(
-            data=self.company.getIntroductoryMetrics(), y=self.y
+            data=self.company.get_introductory_metrics(), y=self.y
         )
         self.addLineChart(
-            profiles=self.company.getHistoricalPriceData(
+            profiles=self.company.get_historical_price_data(
                 tickers=[
                     {
                         'ticker': '^GSPC',
@@ -170,15 +170,15 @@ class Report(object):
         )
 
         self.addHeading1(
-            text="%s (%s)" % (self.company.getName(),
-                              self.company.getSymbol()),
+            text="%s (%s)" % (self.company.get_name(),
+                              self.company.get_symbol()),
             y=self.h - 45
         )
 
         return self.h - 70
 
     def addBusinessSummary(self, y: int) -> int:
-        return self.h - y - self.addParagraph(self.company.getSummary(), y=self.h - y)
+        return self.h - y - self.addParagraph(self.company.get_summary(), y=self.h - y)
 
     def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
