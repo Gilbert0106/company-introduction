@@ -18,7 +18,20 @@ from source.companyApi import CompanyApi
 
 class Report(object):
 
-    w, h = A4
+    WIDTH, HEIGHT = A4
+
+    TICKERS_TO_COMPARE = [
+        {
+            'ticker': '^GSPC',
+            'name': 'S&amp;P 500',
+            'color': '#F6BE00',
+        },
+        {
+            'ticker': '^DJI',
+            'name': 'Dow Jones Industrial Avg.',
+            'color': '#0044CC',
+        }
+    ]
 
     def __init__(self, company: CompanyApi, overwrite: bool) -> None:
         self.company = company
@@ -41,18 +54,7 @@ class Report(object):
         )
         self.addLineChart(
             profiles=self.company.get_historical_price_data(
-                tickers=[
-                    {
-                        'ticker': '^GSPC',
-                        'name': 'S&amp;P 500',
-                        'color': '#F6BE00',
-                    },
-                    {
-                        'ticker': '^DJI',
-                        'name': 'Dow Jones Industrial Avg.',
-                        'color': '#0044CC',
-                    }
-                ]
+                tickers_to_compare=self.TICKERS_TO_COMPARE
             ),
             y=self.y
         )
@@ -99,15 +101,15 @@ class Report(object):
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
 
-        self.canvas.line(32, 45, self.w - 32, 46)
+        self.canvas.line(32, 45, self.WIDTH - 32, 46)
 
         self.addText(
             text="Authored by Simon, https://github.com/Gilbert0106/company-introduction",
             size=9,
             color="#666666",
-            x=self.w - 380,
+            x=self.WIDTH - 380,
             y=32.5,
-            aW=self.w
+            aW=self.WIDTH
         )
 
         self.addText(
@@ -151,9 +153,9 @@ class Report(object):
         if color is None:
             color = "#000000"
         if aW is None:
-            aW = self.w - x - self.margin
+            aW = self.WIDTH - x - self.margin
         if aH is None:
-            aH = self.h
+            aH = self.HEIGHT
 
         self.style.fontSize = size
         self.style.textColor = HexColor(color)
@@ -166,24 +168,24 @@ class Report(object):
     def addTitle(self) -> int:
         self.addHelpText(
             text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",
-            y=self.h - 25
+            y=self.HEIGHT - 25
         )
 
         self.addHeading1(
             text="%s (%s)" % (self.company.get_name(),
                               self.company.get_symbol()),
-            y=self.h - 45
+            y=self.HEIGHT - 45
         )
 
-        return self.h - 70
+        return self.HEIGHT - 70
 
     def addBusinessSummary(self, y: int) -> int:
-        return self.h - y - self.addParagraph(self.company.get_summary(), y=self.h - y)
+        return self.HEIGHT - y - self.addParagraph(self.company.get_summary(), y=self.HEIGHT - y)
 
     def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
         y = y - height - spacing
-        width = self.w / len(data) - 100 / len(data)
+        width = self.WIDTH / len(data) - 100 / len(data)
 
         for item in data:
             self.drawBox(
@@ -194,7 +196,7 @@ class Report(object):
                 height=height,
                 width=width
             )
-            x += (self.w - self.margin * 2) / len(data)
+            x += (self.WIDTH - self.margin * 2) / len(data)
 
         return y
 
@@ -241,13 +243,13 @@ class Report(object):
 
         # Create a ReportLab Drawing object
         drawing = Drawing(
-            width=self.w - self.margin * 2,
+            width=self.WIDTH - self.margin * 2,
             height=200
         )
 
         # Create a bar chart
         chart = VerticalBarChart()
-        chart.width = self.w - self.margin * 3
+        chart.width = self.WIDTH - self.margin * 3
         chart.height = y - self.margin * 2 - headingHeight - 100
         chart.data = [[x[1] for x in data]]
         chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
@@ -260,7 +262,7 @@ class Report(object):
         # Draw the drawing on the canvas
         drawing.wrapOn(
             canv=self.canvas,
-            aW=self.w - self.margin * 4,
+            aW=self.WIDTH - self.margin * 4,
             aH=chart.height
         )
 
@@ -286,7 +288,7 @@ class Report(object):
 
         # Create a bar chart
         chart = HorizontalLineChart()
-        chart.width = self.w - self.margin * 2.6
+        chart.width = self.WIDTH - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 100
 
         chart.data = [profile.get('data', None) for profile in profiles]
@@ -300,7 +302,7 @@ class Report(object):
 
         # Create a ReportLab Drawing object
         drawing = Drawing(
-            width=self.w - self.margin * 2,
+            width=self.WIDTH - self.margin * 2,
             height=200
         )
 
@@ -310,7 +312,7 @@ class Report(object):
         # Draw the drawing on the canvas
         drawing.wrapOn(
             canv=self.canvas,
-            aW=self.w - self.margin * 6,
+            aW=self.WIDTH - self.margin * 6,
             aH=chart.height
         )
 
@@ -323,17 +325,17 @@ class Report(object):
         self.style.fontSize = 10
         self.style.textColor = HexColor("#000000")
 
-        for i, profile in enumerate(profiles): 
+        for i, profile in enumerate(profiles):
             # Draw labels with colored circles on the line chart
             self.canvas.setStrokeColor(HexColor(profile['color']))
             p = Paragraph(profile['name'], style=self.style)
-            p.wrapOn(self.canvas, self.w, self.h)
+            p.wrapOn(self.canvas, self.WIDTH, self.HEIGHT)
             p.drawOn(self.canvas, self.margin + 42, y -
-                    self.margin * 2 - headingHeight - 48 - i * 17)
+                     self.margin * 2 - headingHeight - 48 - i * 17)
 
             self.canvas.setFillColor(HexColor(profile['color']))
             self.canvas.circle(self.margin + 32, y - self.margin *
-                            2 - headingHeight - 40 - i * 17, 3, stroke=1, fill=1)
+                               2 - headingHeight - 40 - i * 17, 3, stroke=1, fill=1)
 
     def save(self) -> None:
         self.canvas.save()

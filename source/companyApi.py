@@ -82,19 +82,19 @@ class CompanyApi(object):
             }
         ]
 
-    def get_historical_price_data(self, tickers: list, start_date: str = None) -> dict:
+    def get_historical_price_data(self, tickers_to_compare: list, start_date: str = None) -> dict:
 
         if start_date == None:
             start_date = (datetime.now() - timedelta(days=10 * 365)
                           ).strftime('%Y-%m-%d')
 
-        tickers.insert(0, {
+        tickers_to_compare.insert(0, {
             'ticker': self.get_symbol(),
             'color': '#FF0000',
             'name': self.get_name(),
         })
 
-        for ticker in tickers:
+        for ticker in tickers_to_compare:
             # Download ticker data
             ticker_data = yf.download(
                 ticker['ticker'], start=start_date, interval="1mo")['Close']
@@ -106,4 +106,4 @@ class CompanyApi(object):
             ticker['data'] = [(date.strftime('%Y-%m'), closing_price * x - 100)[1]
                               for date, closing_price in zip(ticker_data.index, ticker_data)]
 
-        return tickers
+        return tickers_to_compare
