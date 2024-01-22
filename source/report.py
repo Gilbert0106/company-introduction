@@ -33,33 +33,43 @@ class Report(object):
         }
     ]
 
+    FONT = {
+        'name': 'Consola',
+        'path': r"fonts/Consolas-Font/CONSOLA.TTF", 
+
+    }
+
     def __init__(self, company: CompanyApi, overwrite: bool) -> None:
         self.company = company
 
         try:
-            self.path = self.createPath(
-                ticker=self.company.get_symbol(), overwrite=overwrite
+            self.path = self.create_path(
+                ticker=self.company.get_symbol(), 
+                overwrite=overwrite
             )
-            self.style = self.createStyle(
-                fontName="Consola", fontPath=r"fonts/Consolas-Font/CONSOLA.TTF"
+
+            self.style = self.create_style(
+                fontName=self.FONT['name'], 
+                fontPath=self.FONT['path']
             )
         except Exception as e:
             raise Exception(e)
 
-        self.newPage()
-        self.addTitle()
-        self.y = self.addBusinessSummary(80)
-        self.y = self.addBoxColumn(
-            data=self.company.get_introductory_metrics(), y=self.y
+        self.new_page()
+        self.add_titles()
+        self.y = self.add_business_summary(80)
+        self.y = self.add_box_column(
+            data=self.company.get_introductory_metrics(), 
+            y=self.y
         )
-        self.addLineChart(
+        self.add_line_chart(
             profiles=self.company.get_historical_price_data(
                 tickers_to_compare=self.TICKERS_TO_COMPARE
             ),
             y=self.y
         )
 
-    def createPath(self, ticker: str, overwrite: bool) -> str:
+    def create_path(self, ticker: str, overwrite: bool) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
 
         if os.path.isfile(path=filepath) and not overwrite:
@@ -70,7 +80,7 @@ class Report(object):
 
         return filepath
 
-    def createStyle(self, fontName: str, fontPath: str) -> list:
+    def create_style(self, fontName: str, fontPath: str) -> list:
         if not os.path.isfile(path=fontPath):
             raise Exception("The font can not be loaded from: " + fontPath)
 
@@ -83,11 +93,11 @@ class Report(object):
 
         # Set style sheet
         style = getSampleStyleSheet()['Normal']
-        style.fontName = "Consola"
+        style.fontName = fontName
         style.leading = 15
         return style
 
-    def newPage(self) -> None:
+    def new_page(self) -> None:
         if not hasattr(self, 'canvas'):
             self.pagesCount = 1
             self.canvas = Canvas(self.path, pagesize=A4)
@@ -95,15 +105,15 @@ class Report(object):
             self.canvas.showPage()
             self.pagesCount += 1
 
-        self.addFooter()
+        self.add_footer()
 
-    def addFooter(self) -> None:
+    def add_footer(self) -> None:
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
 
         self.canvas.line(32, 45, self.WIDTH - 32, 46)
 
-        self.addText(
+        self.add_text(
             text="Authored by Simon, https://github.com/Gilbert0106/company-introduction",
             size=9,
             color="#666666",
@@ -112,44 +122,38 @@ class Report(object):
             aW=self.WIDTH
         )
 
-        self.addText(
+        self.add_text(
             text=f'Page {self.pagesCount}.',
             size=9,
             x=32,
             y=32,
         )
 
-    def addHeading2(self) -> None:
-        return
-
-    def addParagraph(self) -> None:
-        return
-
-    def addHeading1(self, text: str, y: int, x: int = None) -> int:
+    def add_heading_2(self, text: str, y: int, x: int = None) -> int:
         if x is None:
             x = self.margin
 
-        return self.addText(text=text, size=20, x=x, y=y)
+        return self.add_text(text=text, size=20, x=x, y=y)
 
-    def addHeading2(self, text: str, y: int, x: int = None) -> int:
+    def add_heading_2(self, text: str, y: int, x: int = None) -> int:
         if x is None:
             x = self.margin
 
-        return self.addText(text=text, size=16, x=x, y=y)
+        return self.add_text(text=text, size=16, x=x, y=y)
 
-    def addParagraph(self, text: str, y: int, x: int = None) -> int:
+    def add_paragraph(self, text: str, y: int, x: int = None) -> int:
         if x is None:
             x = self.margin
 
-        return self.addText(text=text, size=9, x=x, y=y)
+        return self.add_text(text=text, size=9, x=x, y=y)
 
-    def addHelpText(self, text: str, y: int, x: int = None) -> int:
+    def add_help_text(self, text: str, y: int, x: int = None) -> int:
         if x is None:
             x = self.margin
 
-        return self.addText(text=text, size=9, color="#666666", x=x, y=y)
+        return self.add_text(text=text, size=9, color="#666666", x=x, y=y)
 
-    def addText(self, x: int, y: int, text: str, size: int, color: str = None, aW: int = None, aH: int = None) -> Paragraph:
+    def add_text(self, x: int, y: int, text: str, size: int, color: str = None, aW: int = None, aH: int = None) -> Paragraph:
         if color is None:
             color = "#000000"
         if aW is None:
@@ -165,13 +169,13 @@ class Report(object):
 
         return p.height
 
-    def addTitle(self) -> int:
-        self.addHelpText(
+    def add_titles(self) -> int:
+        self.add_help_text(
             text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",
             y=self.HEIGHT - 25
         )
 
-        self.addHeading1(
+        self.add_heading_2(
             text="%s (%s)" % (self.company.get_name(),
                               self.company.get_symbol()),
             y=self.HEIGHT - 45
@@ -179,16 +183,16 @@ class Report(object):
 
         return self.HEIGHT - 70
 
-    def addBusinessSummary(self, y: int) -> int:
-        return self.HEIGHT - y - self.addParagraph(self.company.get_summary(), y=self.HEIGHT - y)
+    def add_business_summary(self, y: int) -> int:
+        return self.HEIGHT - y - self.add_paragraph(self.company.get_summary(), y=self.HEIGHT - y)
 
-    def addBoxColumn(self, data: list, y: int, height=60, spacing=20) -> int:
+    def add_box_column(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
         y = y - height - spacing
         width = self.WIDTH / len(data) - 100 / len(data)
 
         for item in data:
-            self.drawBox(
+            self.draw_box(
                 heading=item['value'],
                 subtext=item['description'],
                 x=x,
@@ -200,7 +204,7 @@ class Report(object):
 
         return y
 
-    def drawBox(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
+    def draw_box(self, heading: str, subtext: str, x: int, y: int, width: int, height: int) -> None:
         self.canvas.setStrokeColor(HexColor("#ffffff"))
         self.canvas.setFillColor(HexColor("#f5f5f5"))
 
@@ -212,14 +216,14 @@ class Report(object):
             fill=True
         )
 
-        self.addText(
+        self.add_text(
             x=x + 10,
             y=y + height - 15,
             text=heading,
             size=12
         )
 
-        self.addText(
+        self.add_text(
             x=x + 10,
             y=y + 20,
             text=subtext,
@@ -227,16 +231,16 @@ class Report(object):
             aW=width - 20
         )
 
-    def addBarChart(self, data: list, y: int) -> None:
+    def add_bar_chart(self, data: list, y: int) -> None:
         # Add a heading 2
-        headingHeight = self.addHeading2(
+        headingHeight = self.add_heading_2(
             text="Figure 1: Share price over time.",
             x=self.margin,
             y=y - 40
         )
 
         # Add helptext
-        self.addHelpText(
+        self.add_help_text(
             text="Lorem ipsum dolor set ami",
             y=y - headingHeight - 50
         )
@@ -272,16 +276,16 @@ class Report(object):
             y=self.margin * 2
         )
 
-    def addLineChart(self, profiles: list, y: int) -> None:
+    def add_line_chart(self, profiles: list, y: int) -> None:
         # Add a heading 2
-        headingHeight = self.addHeading2(
+        headingHeight = self.add_heading_2(
             text="Figure 1: Share price over the last 10 years.",
             x=self.margin,
             y=y - 40
         )
 
         # Add helptext
-        self.addHelpText(
+        self.add_help_text(
             text="(%) Return Plotted along the Y-axis.",
             y=y - headingHeight - 50
         )
