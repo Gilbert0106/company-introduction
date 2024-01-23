@@ -2,12 +2,13 @@ FROM python:3.8-slim
 
 RUN apt update \ 
     && apt install python3 -y \
-    && useradd --create-home --shell /bin/bash app_user
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --shell /bin/bash app_user
 
 WORKDIR /usr/app/src
 
 USER app_user
-
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir --upgrade pip \

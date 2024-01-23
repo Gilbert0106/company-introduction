@@ -35,8 +35,7 @@ class Report(object):
 
     FONT = {
         'name': 'Consola',
-        'path': r"fonts/Consolas-Font/CONSOLA.TTF", 
-
+        'path': r"fonts/Consolas-Font/CONSOLA.TTF"
     }
 
     def __init__(self, company: CompanyApi, overwrite: bool) -> None:
