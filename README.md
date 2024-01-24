@@ -23,7 +23,14 @@ docker build -t company_introduction_image --rm .
 3. Run the command below to start a container called `company-introduction` using the `company_introduction_image`
 
 ```
-docker run -it --name company-introduction --rm company_introduction_image
+docker run --name company_introduction_container --rm -v /path/on/host:/usr/app/src/reports -it company_introduction_image
+```
+Replace /path/on/host with the absolute path on your host machine where you want to store the generated reports.
+
+Note: If the path contains spaces, you may need to use quotes around the path, like this:
+
+```
+"/path/with spaces/on/host":"/usr/app/src/reports"
 ```
 
 # Usage
