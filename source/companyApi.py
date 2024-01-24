@@ -47,6 +47,12 @@ class CompanyApi(object):
         else:
             return 'N/A'
 
+    def get_trailing_annual_dividend_yield(self)->int:
+        if 'trailingAnnualDividendYield' in self.info:
+            return str(self.format_percentage(self.info['trailingAnnualDividendYield']))
+        else:
+            return '0.0 %'
+
     def format_percentage(self, number: int) -> str:
         return f'{round(number * 100, 2)} %'
 
@@ -62,23 +68,23 @@ class CompanyApi(object):
         return [
             {
                 'value': self.format_amount(self.info['marketCap']),
-                'description': 'Market capitalization.'
+                'description': 'Market Capitalization.'
             },
             {
                 'value': self.format_amount(self.info['totalRevenue']),
-                'description': 'Total annual revenue.'
+                'description': 'Total Annual Revenue.'
             },
             {
                 'value': self.format_percentage(self.info["ebitdaMargins"]),
-                'description': 'EBITDA / total revenue.'
+                'description': 'EBITDA / Total Revenue.'
             },
             {
                 'value': self.get_pe(),
                 'description': 'Trailing Price/Earnings.'
             },
             {
-                'value': self.format_percentage(self.info["trailingAnnualDividendYield"]),
-                'description': 'Dividend yield.'
+                'value': self.get_trailing_annual_dividend_yield(),
+                'description': 'Trailing Dividend Yield.'
             }
         ]
 
