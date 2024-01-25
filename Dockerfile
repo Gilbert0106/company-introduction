@@ -20,3 +20,5 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY . .
 
 CMD ["bash"]
+
+RUN echo "alias generate-report='python3 main.py'" >> /home/app_user/.bashrc
