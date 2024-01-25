@@ -320,6 +320,8 @@ class Report(object):
 
         for i, profile in enumerate(profiles):
             chart.lines[i].strokeColor = HexColor(profile['color'])
+            if i:
+                chart.lines[i].strokeDashArray = (4, 2)
 
         chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
@@ -355,12 +357,18 @@ class Report(object):
             self.canvas.setStrokeColor(HexColor(profile['color']))
             p = Paragraph(profile['name'], style=self.style)
             p.wrapOn(self.canvas, self.WIDTH, self.HEIGHT)
-            p.drawOn(self.canvas, self.margin + 42, y -
-                     self.margin * 2 - headingHeight - 48 - i * 17)
+            p.drawOn(self.canvas, 
+            self.margin + 42, 
+            y - self.margin * 2 - headingHeight - 20 - i * 17
+            )
 
             self.canvas.setFillColor(HexColor(profile['color']))
-            self.canvas.circle(self.margin + 32, y - self.margin *
-                               2 - headingHeight - 40 - i * 17, 3, stroke=1, fill=1)
+            self.canvas.circle(
+                self.margin + 32, 
+                y - self.margin * 2 - headingHeight - 12 - i * 17, 3, 
+                stroke=1,
+                fill=1
+            )
 
     def save(self) -> None:
         self.canvas.save()
