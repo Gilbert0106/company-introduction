@@ -38,27 +38,28 @@ class Report(object):
         'path': r"fonts/Consolas-Font/CONSOLA.TTF"
     }
 
+    TOTAL_PAGE_COUNT = 1
+
     def __init__(self, company: CompanyApi, overwrite: bool) -> None:
         self.company = company
 
         try:
             self.path = self.create_path(
-                ticker=self.company.get_symbol(), 
+                ticker=self.company.get_symbol(),
                 overwrite=overwrite
             )
 
             self.style = self.create_style(
-                fontName=self.FONT['name'], 
+                fontName=self.FONT['name'],
                 fontPath=self.FONT['path']
             )
         except Exception as e:
             raise Exception(e)
 
         self.new_page()
-        self.add_titles()
-        self.y = self.add_business_summary(80)
+        self.y = self.add_business_summary(self.y)
         self.y = self.add_box_column(
-            data=self.company.get_introductory_metrics(), 
+            data=self.company.get_introductory_metrics(),
             y=self.y
         )
         self.add_line_chart(
@@ -104,8 +105,34 @@ class Report(object):
             self.canvas.showPage()
             self.pagesCount += 1
 
+        self.add_header()
         self.add_footer()
 
+        self.y = self.HEIGHT - 64
+
+    def add_header(self) -> None:
+
+        self.canvas.setStrokeColorRGB(0, 0, 0)
+        self.canvas.setLineWidth(1)
+
+        self.canvas.line(32, self.HEIGHT - 45,
+                         self.WIDTH - 32, self.HEIGHT - 45)
+
+        self.add_text(
+            text=f'Company Introduction | { date.today().strftime("%dth of %B %Y") }',
+            size=7,
+            x=32,
+            y=self.HEIGHT - 25
+        )
+
+        self.add_text(
+            text=f'Page {self.pagesCount} of {self.TOTAL_PAGE_COUNT}.',
+            size=7,
+            x=-32,
+            y=self.HEIGHT - 25,
+            alignment=2
+        )
+    
     def add_footer(self) -> None:
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
@@ -113,22 +140,23 @@ class Report(object):
         self.canvas.line(32, 45, self.WIDTH - 32, 46)
 
         self.add_text(
-            text="Authored by Simon, https://github.com/Gilbert0106/company-introduction",
-            size=9,
+            text="https://github.com/Gilbert0106/company-introduction",
+            size=7,
             color="#666666",
-            x=self.WIDTH - 380,
+            x=-32,
             y=32.5,
-            aW=self.WIDTH
+            aW=self.WIDTH,
+            alignment=2
         )
 
         self.add_text(
-            text=f'Page {self.pagesCount}.',
-            size=9,
+            text=f'© Company Introduction { date.today().year }, Authored by Simon',
+            size=7,
             x=32,
             y=32,
         )
 
-    def add_heading_2(self, text: str, y: int, x: int = None) -> int:
+    def add_heading_1(self, text: str, y: int, x: int = None) -> int:
         if x is None:
             x = self.margin
 
@@ -152,7 +180,7 @@ class Report(object):
 
         return self.add_text(text=text, size=9, color="#666666", x=x, y=y)
 
-    def add_text(self, x: int, y: int, text: str, size: int, color: str = None, aW: int = None, aH: int = None) -> Paragraph:
+    def add_text(self, x: int, y: int, text: str, size: int, color: str = None, aW: int = None, aH: int = None, alignment: int = 0) -> Paragraph:
         if color is None:
             color = "#000000"
         if aW is None:
@@ -162,28 +190,22 @@ class Report(object):
 
         self.style.fontSize = size
         self.style.textColor = HexColor(color)
+        self.style.alignment = alignment
         p = Paragraph(text, style=self.style)
         p.wrapOn(self.canvas, aW, aH)
         p.drawOn(self.canvas, x, y - p.height)
 
         return p.height
 
-    def add_titles(self) -> int:
-        self.add_help_text(
-            text=date.today().strftime("%dth of %B %Y") + ", Introduction of:",
-            y=self.HEIGHT - 25
-        )
-
-        self.add_heading_2(
+    def add_business_summary(self, y: int) -> int:
+        
+        heading_height = self.add_heading_1(
             text="%s (%s)" % (self.company.get_name(),
                               self.company.get_symbol()),
-            y=self.HEIGHT - 45
+            y=y
         )
 
-        return self.HEIGHT - 70
-
-    def add_business_summary(self, y: int) -> int:
-        return self.HEIGHT - y - self.add_paragraph(self.company.get_summary(), y=self.HEIGHT - y)
+        return y - self.add_paragraph(self.company.get_summary(), y=y - heading_height - 20) - heading_height - 20
 
     def add_box_column(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
@@ -235,13 +257,13 @@ class Report(object):
         headingHeight = self.add_heading_2(
             text="Figure 1: Share price over time.",
             x=self.margin,
-            y=y - 40
+            y=y
         )
 
         # Add helptext
         self.add_help_text(
             text="Lorem ipsum dolor set ami",
-            y=y - headingHeight - 50
+            y=y - headingHeight
         )
 
         # Create a ReportLab Drawing object
@@ -280,19 +302,19 @@ class Report(object):
         headingHeight = self.add_heading_2(
             text="Figure 1: Share price over the last 10 years.",
             x=self.margin,
-            y=y - 40
+            y=y - 20
         )
 
         # Add helptext
         self.add_help_text(
             text="(%) Return Plotted along the Y-axis.",
-            y=y - headingHeight - 50
+            y=y - headingHeight - 30
         )
 
         # Create a bar chart
         chart = HorizontalLineChart()
         chart.width = self.WIDTH - self.margin * 2.6
-        chart.height = y - self.margin * 2 - headingHeight - 100
+        chart.height = y - self.margin * 2 - headingHeight - 70
 
         chart.data = [profile.get('data', None) for profile in profiles]
 
