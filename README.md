@@ -20,12 +20,11 @@ cd company-introduction
 docker build -t company_introduction_image --rm .
 ```
 
-3. Run the command below to start a container called `company-introduction` using the `company_introduction_image`
+3. Run the command below to start a container called `company-introduction` using the `company_introduction_image`. Replace /path/on/host with the absolute path on your host machine where you want to store the generated reports.
 
 ```
 docker run --name company_introduction_container --rm -v /path/on/host:/usr/app/src/reports -it company_introduction_image
 ```
-Replace /path/on/host with the absolute path on your host machine where you want to store the generated reports.
 
 Note: If the path contains spaces, you may need to use quotes around the path, like this:
 
@@ -38,12 +37,24 @@ Note: If the path contains spaces, you may need to use quotes around the path, l
 In order to generate a report for the company run the below command while in the container
 
 ```
-python main.py [TICKER SYMBOL]
+generate-report [TICKER SYMBOL]
 ```
 
 **Example** 
 Generating report for Netflix (Ticker symbol NFLX)
 
 ```
-python main.py NFLX
+generate-report NFLX
+```
+
+If you would like to generate a new report on the same company on the same day you will have to use the flag --overwrite, see below for example
+
+```
+generate-report NFLX --overwrite
+```
+
+To get some information on the arguments available please use -h or --help
+
+```
+generate-report -h
 ```
