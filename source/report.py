@@ -69,6 +69,14 @@ class Report(object):
             y=self.y
         )
 
+        self.new_page()
+
+        self.add_bar_chart(
+            data=self.company.get_revenue_and_earnings_data(),
+            y=self.y
+        )
+
+
     def create_path(self, ticker: str, overwrite: bool) -> str:
         filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
 
@@ -253,17 +261,17 @@ class Report(object):
         )
 
     def add_bar_chart(self, data: list, y: int) -> None:
-        # Add a heading 2
-        headingHeight = self.add_heading_2(
-            text="Figure 1: Share price over time.",
+         # Add a heading 2
+        heading_height = self.add_heading_2(
+            text="Figure 2: Revenue and earnings per year.",
             x=self.margin,
-            y=y
+            y=y - 20
         )
 
         # Add helptext
         self.add_help_text(
-            text="Lorem ipsum dolor set ami",
-            y=y - headingHeight
+            text="Revenue and earnings per year",
+            y=y - heading_height - 30
         )
 
         # Create a ReportLab Drawing object
@@ -273,13 +281,28 @@ class Report(object):
         )
 
         # Create a bar chart
+        years = list(range(2013, 2023))
+        revenue_data = [500, 600, 700, 800, 900, 10, 110, 120, 130, 140]
+        earnings_data = [300, 400, 500, 600, 700, 800, 900, 10, 110, 120]
+
+        # Create a VerticalBarChart
         chart = VerticalBarChart()
-        chart.width = self.WIDTH - self.margin * 3
-        chart.height = y - self.margin * 2 - headingHeight - 100
-        chart.data = [[x[1] for x in data]]
-        chart.categoryAxis.categoryNames = [str(x[0]) for x in data]
+        chart.strokeColor = colors.white
+        chart.width = self.WIDTH - self.margin * 2.6
+        chart.height = 200
+        chart.data = [revenue_data, earnings_data]
+        
         chart.bars[0].fillColor = colors.black
-        chart.categoryAxis.style = 'stacked'
+        chart.bars[0].strokeColor = None
+        chart.bars[1].fillColor = colors.grey
+        chart.bars[1].strokeColor = None
+        chart.fillColor = HexColor("#f5f5f5")
+        chart.categoryAxis.categoryNames = [str(year) for year in years]
+        chart.categoryAxis.labels.fontName = 'Consola'
+        chart.valueAxis.labels.fontName = 'Consola'
+        chart.valueAxis.valueMin = 0
+        chart.valueAxis.valueMax = max(max(revenue_data), max(earnings_data)) + 100
+        chart.valueAxis.valueStep = 200
 
         # Add the bar chart to the drawing
         drawing.add(chart)
@@ -287,14 +310,14 @@ class Report(object):
         # Draw the drawing on the canvas
         drawing.wrapOn(
             canv=self.canvas,
-            aW=self.WIDTH - self.margin * 4,
+            aW=self.WIDTH - self.margin * 6,
             aH=chart.height
         )
 
         drawing.drawOn(
             canvas=self.canvas,
-            x=self.margin,
-            y=self.margin * 2
+            x=32,
+            y=self.y - chart.height - heading_height - 70
         )
 
     def add_line_chart(self, profiles: list, y: int) -> None:
@@ -311,7 +334,7 @@ class Report(object):
             y=y - headingHeight - 30
         )
 
-        # Create a bar chart
+        # Create a line chart
         chart = HorizontalLineChart()
         chart.width = self.WIDTH - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 70
