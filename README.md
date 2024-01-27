@@ -16,7 +16,7 @@ cd company-introduction
 2. Run the command below to build an image called `company_introduction_image` based on the `Dockerfile` that can be located in the root of the project
 
 ```
-sudo docker-compose run company_introduction bash
+sudo docker-compose run company_introduction
 ```
 
 
