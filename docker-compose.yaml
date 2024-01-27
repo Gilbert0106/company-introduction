@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  company_introduction:
+    container_name: company_introduction_container 
+    build: ./
+    volumes:
+      - type: bind
+        source: ./reports 
+        target: /usr/app/src/reports
