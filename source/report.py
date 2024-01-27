@@ -38,7 +38,7 @@ class Report(object):
         'path': r"fonts/Consolas-Font/CONSOLA.TTF"
     }
 
-    TOTAL_PAGE_COUNT = 1
+    TOTAL_PAGE_COUNT = 2
 
     def __init__(self, company: CompanyApi, overwrite: bool) -> None:
         self.company = company
