@@ -40,15 +40,11 @@ class Report(object):
 
     TOTAL_PAGE_COUNT = 1
 
-    def __init__(self, company: CompanyApi, overwrite: bool) -> None:
+    def __init__(self, company: CompanyApi, path: str) -> None:
         self.company = company
+        self.path = path
 
         try:
-            self.path = self.create_path(
-                ticker=self.company.get_symbol(),
-                overwrite=overwrite
-            )
-
             self.style = self.create_style(
                 fontName=self.FONT['name'],
                 fontPath=self.FONT['path']
@@ -68,17 +64,6 @@ class Report(object):
             ),
             y=self.y
         )
-
-    def create_path(self, ticker: str, overwrite: bool) -> str:
-        filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
-
-        if os.path.isfile(path=filepath) and not overwrite:
-            raise Exception(
-                "A report for ticker " + ticker +
-                " has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite."
-            )
-
-        return filepath
 
     def create_style(self, fontName: str, fontPath: str) -> list:
         if not os.path.isfile(path=fontPath):
