@@ -13,7 +13,7 @@ In order to use the application you will need to build an image and start a cont
 cd company-introduction
 ```
 
-2. Run the command below to build an image called `company_introduction_image` based on the `Dockerfile` that can be located in the root of the project
+2. Run the command below to build to build an image and start a container using docker-compose
 
 ```
 sudo docker-compose run company_introduction

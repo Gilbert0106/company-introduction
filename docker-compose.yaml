@@ -3,6 +3,8 @@ services:
   company_introduction:
     container_name: company_introduction_container
     build: ./
+    stdin_open: true
+    tty: true
     volumes:
       - type: bind
         source: ./reports 
