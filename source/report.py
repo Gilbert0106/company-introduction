@@ -300,7 +300,7 @@ class Report(object):
         chart = HorizontalLineChart()
         chart.width = self.WIDTH - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 70
-
+        chart.fillColor = HexColor("#f5f5f5")
         chart.data = [profile.get('data', None) for profile in profiles]
 
         for i, profile in enumerate(profiles):
@@ -308,8 +308,8 @@ class Report(object):
             if i:
                 chart.lines[i].strokeDashArray = (4, 2)
 
-        chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
+        chart.valueAxis.valueMax = max(max(profile.get('data', None)) for profile in profiles) * 1.05
         chart.categoryAxis.visible = False
 
         # Create a ReportLab Drawing object
