@@ -35,7 +35,7 @@ class Report(object):
 
     FONT = {
         'name': 'Consola',
-        'path': r"fonts/Consolas-Font/CONSOLA.TTF"
+        'path': r"resources/fonts/CONSOLA.TTF"
     }
 
     TOTAL_PAGE_COUNT = 1
