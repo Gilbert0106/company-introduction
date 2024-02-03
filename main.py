@@ -3,6 +3,7 @@ import os.path
 import argparse
 import requests
 from datetime import date
+from dotenv import load_dotenv
 
 from source.report import Report
 from source.companyApi import CompanyApi
@@ -28,6 +29,7 @@ def main():
 
     args = parser.parse_args()
     filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%d%m%y")}.pdf'
+    load_dotenv()
 
     # Make sure correct usage of program
     if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
