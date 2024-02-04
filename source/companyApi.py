@@ -121,3 +121,8 @@ class CompanyApi(object):
                               for date, closing_price in zip(ticker_data.index, ticker_data)]
 
         return tickers_to_compare
+
+    def get_revenue_and_earnings_data(self) -> dict: 
+        return {
+
+        }
