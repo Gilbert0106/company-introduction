@@ -35,20 +35,16 @@ class Report(object):
 
     FONT = {
         'name': 'Consola',
-        'path': r"fonts/Consolas-Font/CONSOLA.TTF"
+        'path': r"resources/fonts/CONSOLA.TTF"
     }
 
     TOTAL_PAGE_COUNT = 2
 
-    def __init__(self, company: CompanyApi, overwrite: bool) -> None:
+    def __init__(self, company: CompanyApi, path: str) -> None:
         self.company = company
+        self.path = path
 
         try:
-            self.path = self.create_path(
-                ticker=self.company.get_symbol(),
-                overwrite=overwrite
-            )
-
             self.style = self.create_style(
                 fontName=self.FONT['name'],
                 fontPath=self.FONT['path']
@@ -68,25 +64,6 @@ class Report(object):
             ),
             y=self.y
         )
-
-        self.new_page()
-
-        self.add_bar_chart(
-            data=self.company.get_revenue_and_earnings_data(),
-            y=self.y
-        )
-
-
-    def create_path(self, ticker: str, overwrite: bool) -> str:
-        filepath = f'reports/{ticker}-{date.today().strftime("%d%m%y")}.pdf'
-
-        if os.path.isfile(path=filepath) and not overwrite:
-            raise Exception(
-                "A report for ticker " + ticker +
-                " has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite."
-            )
-
-        return filepath
 
     def create_style(self, fontName: str, fontPath: str) -> list:
         if not os.path.isfile(path=fontPath):
@@ -338,7 +315,7 @@ class Report(object):
         chart = HorizontalLineChart()
         chart.width = self.WIDTH - self.margin * 2.6
         chart.height = y - self.margin * 2 - headingHeight - 70
-
+        chart.fillColor = HexColor("#f5f5f5")
         chart.data = [profile.get('data', None) for profile in profiles]
 
         for i, profile in enumerate(profiles):
@@ -346,8 +323,8 @@ class Report(object):
             if i:
                 chart.lines[i].strokeDashArray = (4, 2)
 
-        chart.fillColor = HexColor("#f5f5f5")
         chart.valueAxis.labels.fontName = 'Consola'
+        chart.valueAxis.valueMax = max(max(profile.get('data', None)) for profile in profiles) * 1.05
         chart.categoryAxis.visible = False
 
         # Create a ReportLab Drawing object

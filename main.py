@@ -1,6 +1,9 @@
 import sys
+import os.path
 import argparse
 import requests
+from datetime import date
+from dotenv import load_dotenv
 
 from source.report import Report
 from source.companyApi import CompanyApi
@@ -25,17 +28,21 @@ def main():
     )
 
     args = parser.parse_args()
+    filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%d%m%y")}.pdf'
+    load_dotenv()
 
     # Make sure correct usage of program
     if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
         sys.exit("A valid ticker must be between 3 and 9 characters long.")
     elif not check_internet_connection():
         sys.exit("Make sure you are connected to the internet.")
+    elif os.path.isfile(path=filepath) and not args.overwrite:
+        sys.exit(f'A report for ticker {args.ticker_symbol} has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
 
-    # Initalize a new CompanyApi and Report
     try:
+        # Initalize a new CompanyApi and Report
         company = CompanyApi(ticker=args.ticker_symbol)
-        report = Report(company=company, overwrite=args.overwrite)
+        report = Report(company=company, path=filepath)
     except Exception as e:
         sys.exit(e)
 
@@ -44,7 +51,6 @@ def main():
 
 
 def check_internet_connection():
-    # Check for internet connection
     try:
         requests.get("https://google.com", timeout=5)
         return True

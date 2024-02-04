@@ -1,5 +1,7 @@
+import os
 import yfinance as yf
 from datetime import datetime, timedelta
+from alpha_vantage.timeseries import TimeSeries
 
 
 class CompanyApi(object):
@@ -11,11 +13,17 @@ class CompanyApi(object):
 
     def __init__(self, ticker: str) -> None:
         try:
-            self.handle = yf.Ticker(ticker)
-            self.info = self.handle.info
+            self.yfinance_handle = yf.Ticker(ticker)
+            self.info = self.yfinance_handle.info
         except:
             raise Exception(ticker + " does not seem to be a valid ticker.")
 
+        try: 
+            self.alpha_vantage_handle = TimeSeries(key= os.environ.get("ALPHA_VANTAGE_API_KEY"))
+            get_quote_endpoint = self.alpha_vantage_handle.get_quote_endpoint(symbol=ticker)
+        except Exception as e: 
+             raise Exception(f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
+    
         if self.info['quoteType'] != 'EQUITY':
             raise Exception(
                 ticker + " does not seem to be a valid company stock ticker.")
