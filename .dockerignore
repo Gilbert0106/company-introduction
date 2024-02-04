@@ -1,7 +1,28 @@
-Dockerfile
+# Exclude Python bytecode files
+__pycache__
+
+# Exclude reports directory
+reports/
+
+# Exclude examples directory
+examples/
+
+# Exclude source-specific bytecode files
+source/__pycache__
+
+# Exclude version control files
 .git
 .gitignore
+
+# Exclude Docker ignore file itself
+.dockerignore
+
+# Exclude environment configuration files
+.env
+.env.example
+
+# Exclude Docker build context files
+Dockerfile
+
+# Exclude README file
 README.md
-__pycache__
-examples/
-source/__pycache__
