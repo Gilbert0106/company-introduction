@@ -65,6 +65,13 @@ class Report(object):
             y=self.y
         )
 
+        self.new_page()
+
+        self.add_bar_chart(
+            data=self.company.get_revenue_and_earnings_data_bar_chart(),
+            y=self.y
+        )
+
     def create_style(self, fontName: str, fontPath: str) -> list:
         if not os.path.isfile(path=fontPath):
             raise Exception("The font can not be loaded from: " + fontPath)
@@ -104,7 +111,8 @@ class Report(object):
                          self.WIDTH - 32, self.HEIGHT - 45)
 
         self.add_text(
-            text=f'Company Introduction | { date.today().strftime("%dth of %B %Y") }',
+            text=f'Company Introduction | \
+                {date.today().strftime("%dth of %B %Y")}',
             size=7,
             x=32,
             y=self.HEIGHT - 25
@@ -117,7 +125,7 @@ class Report(object):
             y=self.HEIGHT - 25,
             alignment=2
         )
-    
+
     def add_footer(self) -> None:
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
@@ -135,7 +143,8 @@ class Report(object):
         )
 
         self.add_text(
-            text=f'© Company Introduction { date.today().year }, Authored by Simon',
+            text=f'© Company Introduction \
+            {date.today().year}, Authored by Simon',
             size=7,
             x=32,
             y=32,
@@ -183,7 +192,6 @@ class Report(object):
         return p.height
 
     def add_business_summary(self, y: int) -> int:
-        
         heading_height = self.add_heading_1(
             text="%s (%s)" % (self.company.get_name(),
                               self.company.get_symbol()),
@@ -238,7 +246,7 @@ class Report(object):
         )
 
     def add_bar_chart(self, data: list, y: int) -> None:
-         # Add a heading 2
+        # Add a heading 2
         heading_height = self.add_heading_2(
             text="Figure 2: Revenue and earnings per year.",
             x=self.margin,
@@ -247,7 +255,7 @@ class Report(object):
 
         # Add helptext
         self.add_help_text(
-            text="Revenue and earnings per year",
+            text="Revenue and earnings per year ($ M.)",
             y=y - heading_height - 30
         )
 
@@ -257,29 +265,29 @@ class Report(object):
             height=200
         )
 
-        # Create a bar chart
-        years = list(range(2013, 2023))
-        revenue_data = [500, 600, 700, 800, 900, 10, 110, 120, 130, 140]
-        earnings_data = [300, 400, 500, 600, 700, 800, 900, 10, 110, 120]
-
         # Create a VerticalBarChart
         chart = VerticalBarChart()
         chart.strokeColor = colors.white
         chart.width = self.WIDTH - self.margin * 2.6
         chart.height = 200
-        chart.data = [revenue_data, earnings_data]
-        
+        chart.data = [data['revenues'], data['earnings']]
+
         chart.bars[0].fillColor = colors.black
         chart.bars[0].strokeColor = None
         chart.bars[1].fillColor = colors.grey
         chart.bars[1].strokeColor = None
         chart.fillColor = HexColor("#f5f5f5")
-        chart.categoryAxis.categoryNames = [str(year) for year in years]
+        chart.categoryAxis.categoryNames = [
+            str(year) for year in data['years']
+        ]
         chart.categoryAxis.labels.fontName = 'Consola'
+
         chart.valueAxis.labels.fontName = 'Consola'
-        chart.valueAxis.valueMin = 0
-        chart.valueAxis.valueMax = max(max(revenue_data), max(earnings_data)) + 100
-        chart.valueAxis.valueStep = 200
+        chart.valueAxis.valueMin = min(data['earnings']) * 1.1
+        chart.valueAxis.valueMax = max(
+            max(data['revenues']),
+            max(data['earnings'])
+        ) * 1.1
 
         # Add the bar chart to the drawing
         drawing.add(chart)
@@ -324,7 +332,8 @@ class Report(object):
                 chart.lines[i].strokeDashArray = (4, 2)
 
         chart.valueAxis.labels.fontName = 'Consola'
-        chart.valueAxis.valueMax = max(max(profile.get('data', None)) for profile in profiles) * 1.05
+        chart.valueAxis.valueMax = max(
+            max(profile.get('data', None)) for profile in profiles) * 1.05
         chart.categoryAxis.visible = False
 
         # Create a ReportLab Drawing object
@@ -357,15 +366,15 @@ class Report(object):
             self.canvas.setStrokeColor(HexColor(profile['color']))
             p = Paragraph(profile['name'], style=self.style)
             p.wrapOn(self.canvas, self.WIDTH, self.HEIGHT)
-            p.drawOn(self.canvas, 
-            self.margin + 42, 
-            y - self.margin * 2 - headingHeight - 20 - i * 17
-            )
+            p.drawOn(self.canvas,
+                     self.margin + 42,
+                     y - self.margin * 2 - headingHeight - 20 - i * 17
+                     )
 
             self.canvas.setFillColor(HexColor(profile['color']))
             self.canvas.circle(
-                self.margin + 32, 
-                y - self.margin * 2 - headingHeight - 12 - i * 17, 3, 
+                self.margin + 32,
+                y - self.margin * 2 - headingHeight - 12 - i * 17, 3,
                 stroke=1,
                 fill=1
             )
