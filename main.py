@@ -28,7 +28,7 @@ def main():
     )
 
     args = parser.parse_args()
-    filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%d%m%y")}.pdf'
+    filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%y%m%d")}.pdf'
     load_dotenv()
 
     # Make sure correct usage of program
