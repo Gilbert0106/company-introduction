@@ -69,8 +69,13 @@ class Report(object):
 
         self.new_page()
 
-        self.add_bar_chart(
+        self.y = self.add_bar_chart(
             data=self.company.get_revenue_and_earnings_data_bar_chart(),
+            y=self.y
+        )
+
+        self.y = self.add_box_column(
+            data=self.company.get_earnings_and_revenue_cagr(),
             y=self.y
         )
 
@@ -206,7 +211,7 @@ class Report(object):
     def add_box_column(self, data: list, y: int, height=60, spacing=20) -> int:
         x = self.margin
         y = y - height - spacing
-        width = self.WIDTH / len(data) - 100 / len(data)
+        width = self.WIDTH / len(data) - 100 / (len(data) - 1)
 
         for item in data:
             self.draw_box(
@@ -307,6 +312,8 @@ class Report(object):
             x=32,
             y=self.y - chart.height - heading_height - 70
         )
+
+        return self.y - chart.height - heading_height - 70
 
     def add_line_chart(self, profiles: list, y: int) -> None:
         # Add a heading 2
