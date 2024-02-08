@@ -38,6 +38,8 @@ class Report(object):
         'path': r"resources/fonts/CONSOLA.TTF"
     }
 
+    IMAGE_PATH = "resources/images/clover.png"
+
     TOTAL_PAGE_COUNT = 2
 
     def __init__(self, company: CompanyApi, path: str) -> None:
@@ -103,7 +105,8 @@ class Report(object):
         self.y = self.HEIGHT - 64
 
     def add_header(self) -> None:
-
+        # Load and draw the icon
+        self.canvas.drawImage(self.IMAGE_PATH, 32, self.HEIGHT - 34, width=10, height=10, preserveAspectRatio=True, mask='auto')
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
 
@@ -114,7 +117,7 @@ class Report(object):
             text=f'Company Introduction | \
                 {date.today().strftime("%dth of %B %Y")}',
             size=7,
-            x=32,
+            x=48,
             y=self.HEIGHT - 25
         )
 
