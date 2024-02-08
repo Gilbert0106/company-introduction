@@ -78,6 +78,21 @@ class CompanyApi(object):
             else:
                 number /= 1000
 
+    def calculate_cagr(self, num_years: int, key: str):
+        num_reports = len(self.income_statements)
+
+        if num_reports < num_years:
+            return None
+
+        cagr = (
+            (
+                int(self.income_statements[0][key]) /
+                int(self.income_statements[num_years][key])
+            ) ** (1 / num_years)
+        ) - 1
+
+        return cagr
+
     def get_introductory_metrics(self) -> list:
         return [
             {
@@ -99,6 +114,30 @@ class CompanyApi(object):
             {
                 'value': self.get_trailing_annual_dividend_yield(),
                 'description': 'Trailing Dividend Yield.'
+            }
+        ]
+
+    def get_earnings_and_revenue_cagr(self) -> list:
+        return [
+            {
+                'value': self.format_percentage(self.calculate_cagr(3, "totalRevenue")),
+                'description': '3 year revenue CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(3, "netIncome")),
+                'description': '3 year earning CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(10, "totalRevenue")),
+                'description': '10 year revenue CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(10, "netIncome")),
+                'description': '10 year earning CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(10, "grossMargin")),
+                'description': '10 year gross margin CAGR.'
             }
         ]
 
@@ -142,8 +181,16 @@ class CompanyApi(object):
 
         return data
 
-    def get_income_statements(self) -> dict:
-        return self.fetch("INCOME_STATEMENT")['annualReports']
+    def get_income_statements(self) -> dict:    
+        result = self.fetch("INCOME_STATEMENT")
+
+        if not 'annualReports' in result:
+            raise Exception(result["Information"])
+            
+        for annual_report in result['annualReports']:
+            annual_report["grossMargin"] = (float(annual_report["grossProfit"]) / float(annual_report["totalRevenue"]))
+        
+        return result['annualReports']
 
     def fetch(self, function) -> dict:
         return requests.get(f'https://www.alphavantage.co/query?function={function}&symbol={self.ticker}&apikey={os.environ.get("ALPHA_VANTAGE_API_KEY")}').json()
