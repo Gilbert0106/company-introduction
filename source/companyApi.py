@@ -1,5 +1,6 @@
 import os
 import yfinance as yf
+import requests
 from datetime import datetime, timedelta
 from alpha_vantage.timeseries import TimeSeries
 
@@ -12,21 +13,26 @@ class CompanyApi(object):
     }
 
     def __init__(self, ticker: str) -> None:
+        self.ticker = ticker
+
         try:
-            self.yfinance_handle = yf.Ticker(ticker)
+            self.yfinance_handle = yf.Ticker(self.ticker)
             self.info = self.yfinance_handle.info
         except:
-            raise Exception(ticker + " does not seem to be a valid ticker.")
+            raise Exception(
+                self.ticker + " does not seem to be a valid ticker.")
 
-        try: 
-            self.alpha_vantage_handle = TimeSeries(key= os.environ.get("ALPHA_VANTAGE_API_KEY"))
-            get_quote_endpoint = self.alpha_vantage_handle.get_quote_endpoint(symbol=ticker)
-        except Exception as e: 
-             raise Exception(f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
-    
+        try:
+            self.alpha_vantage_handle = TimeSeries(
+                key=os.environ.get("ALPHA_VANTAGE_API_KEY"))
+            self.income_statements = self.get_income_statements()
+        except Exception as e:
+            raise Exception(
+                f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
+
         if self.info['quoteType'] != 'EQUITY':
             raise Exception(
-                ticker + " does not seem to be a valid company stock ticker.")
+                self.ticker + " does not seem to be a valid company stock ticker.")
 
         self.currency = self.get_currency()
 
@@ -55,7 +61,7 @@ class CompanyApi(object):
         else:
             return 'N/A'
 
-    def get_trailing_annual_dividend_yield(self)->int:
+    def get_trailing_annual_dividend_yield(self) -> int:
         if 'trailingAnnualDividendYield' in self.info:
             return str(self.format_percentage(self.info['trailingAnnualDividendYield']))
         else:
@@ -88,7 +94,7 @@ class CompanyApi(object):
             },
             {
                 'value': self.get_pe(),
-                'description': 'Trailing Price/Earnings.'
+                'description': 'Trailing Price / Earnings.'
             },
             {
                 'value': self.get_trailing_annual_dividend_yield(),
@@ -113,7 +119,7 @@ class CompanyApi(object):
             ticker_data = yf.download(
                 ticker['ticker'], start=start_date, interval="1mo")['Close']
 
-            # Calulate the factor to apply on all values
+            # Calculate the factor to apply on all values
             x = 100 / ticker_data.iloc[0]
 
             # Format data and put it in dict
@@ -122,7 +128,22 @@ class CompanyApi(object):
 
         return tickers_to_compare
 
-    def get_revenue_and_earnings_data(self) -> dict: 
-        return {
+    def get_revenue_and_earnings_data_bar_chart(self) -> dict:
 
-        }
+        data = {"years": [], "revenues": [], "earnings": []}
+
+        for statements in self.income_statements[:10]:
+            data['years'].insert(0, datetime.strptime(
+                statements['fiscalDateEnding'], '%Y-%m-%d').year)
+            data['revenues'].insert(
+                0, float(statements['totalRevenue']) / 1000000)
+            data['earnings'].insert(
+                0, float(statements['netIncome']) / 1000000)
+
+        return data
+
+    def get_income_statements(self) -> dict:
+        return self.fetch("INCOME_STATEMENT")['annualReports']
+
+    def fetch(self, function) -> dict:
+        return requests.get(f'https://www.alphavantage.co/query?function={function}&symbol={self.ticker}&apikey={os.environ.get("ALPHA_VANTAGE_API_KEY")}').json()
