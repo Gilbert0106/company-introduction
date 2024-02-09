@@ -82,16 +82,12 @@ class CompanyApi(object):
         num_reports = len(self.income_statements)
 
         if num_reports < num_years:
-            return None
+            raise Exception("Not enough historical data to accurately value the company.")
 
-        cagr = (
-            (
-                int(self.income_statements[0][key]) /
-                int(self.income_statements[num_years][key])
-            ) ** (1 / num_years)
-        ) - 1
+        ending_value = float(self.income_statements[0][key])
+        beginning_value = float(self.income_statements[num_years - 1][key])
 
-        return cagr
+        return (ending_value / beginning_value) ** (1 / num_years) - 1
 
     def get_introductory_metrics(self) -> list:
         return [
@@ -121,23 +117,23 @@ class CompanyApi(object):
         return [
             {
                 'value': self.format_percentage(self.calculate_cagr(3, "totalRevenue")),
-                'description': '3 year revenue CAGR.'
+                'description': '3 year total revenue CAGR.'
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(3, "netIncome")),
-                'description': '3 year earning CAGR.'
+                'description': '3 year net income CAGR.'
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(10, "totalRevenue")),
-                'description': '10 year revenue CAGR.'
+                'description': '10 year total revenue CAGR.'
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(10, "netIncome")),
-                'description': '10 year earning CAGR.'
+                'description': '10 year net income CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(10, "grossMargin")),
-                'description': '10 year gross margin CAGR.'
+                'value': self.format_percentage(self.calculate_cagr(10, "netIncomeMargin")),
+                'description': '10 year net income margin CAGR.'
             }
         ]
 
@@ -188,7 +184,7 @@ class CompanyApi(object):
             raise Exception(result["Information"])
             
         for annual_report in result['annualReports']:
-            annual_report["grossMargin"] = (float(annual_report["grossProfit"]) / float(annual_report["totalRevenue"]))
+            annual_report["netIncomeMargin"] = (float(annual_report["netIncome"]) / float(annual_report["totalRevenue"]))
         
         return result['annualReports']
 

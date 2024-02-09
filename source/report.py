@@ -263,7 +263,7 @@ class Report(object):
 
         # Add helptext
         self.add_help_text(
-            text="Revenue and earnings per year ($ M.)",
+            text="Total revenue and net income per year ($ M.)",
             y=y - heading_height - 30
         )
 
