@@ -67,7 +67,8 @@ class CompanyApi(object):
         else:
             return '0.0 %'
 
-    def format_percentage(self, number: int) -> str:
+    @staticmethod
+    def format_percentage(number: int) -> str:
         return f'{round(number * 100, 2)} %'
 
     def format_amount(self, number: int) -> str:
@@ -78,11 +79,12 @@ class CompanyApi(object):
             else:
                 number /= 1000
 
-    def calculate_cagr(self, num_years: int, key: str):
+    def calculate_cagr(self, num_years: int, key: str) -> float:
         num_reports = len(self.income_statements)
 
         if num_reports < num_years:
-            raise Exception("Not enough historical data to accurately value the company.")
+            raise Exception(
+                "Not enough historical data to accurately value the company.")
 
         ending_value = float(self.income_statements[0][key])
         beginning_value = float(self.income_statements[num_years - 1][key])
@@ -177,15 +179,16 @@ class CompanyApi(object):
 
         return data
 
-    def get_income_statements(self) -> dict:    
+    def get_income_statements(self) -> dict:
         result = self.fetch("INCOME_STATEMENT")
 
         if not 'annualReports' in result:
             raise Exception(result["Information"])
-            
+
         for annual_report in result['annualReports']:
-            annual_report["netIncomeMargin"] = (float(annual_report["netIncome"]) / float(annual_report["totalRevenue"]))
-        
+            annual_report["netIncomeMargin"] = float(
+                annual_report["netIncome"]) / float(annual_report["totalRevenue"])
+
         return result['annualReports']
 
     def fetch(self, function) -> dict:
