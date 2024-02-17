@@ -12,6 +12,8 @@ class CompanyApi(object):
         'YEN': '¥'
     }
 
+    currency: str
+
     def __init__(self, ticker: str) -> None:
         self.ticker = ticker
 
@@ -34,17 +36,17 @@ class CompanyApi(object):
             raise Exception(
                 self.ticker + " does not seem to be a valid company stock ticker.")
 
-        self.currency = self.get_currency()
+        self.set_currency()
 
-    def get_currency(self) -> str:
+    def set_currency(self) -> None:
 
         if not 'currency' in self.info.keys():
             raise Exception(f'Could not retireve all necessary data for ticker symbol: \
                  "{self.get_symbol()}", are there any other ticker symbols that represent this company?')
         elif self.info['currency'] in self.CURRENCY_SYMBOLS.keys():
-            return self.CURRENCY_SYMBOLS[self.info['currency']]
+            self.currency = self.CURRENCY_SYMBOLS[self.info['currency']]
         else:
-            return self.info['currency']
+            self.currency = self.info['currency']
 
     def get_name(self) -> str:
         return self.info['shortName']
