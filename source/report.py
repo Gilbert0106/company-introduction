@@ -209,10 +209,13 @@ class Report(object):
 
         return y - self.add_paragraph(self.company.get_summary(), y=y - heading_height - 20) - heading_height - 20
 
-    def add_box_column(self, data: list, y: int, height=60, spacing=20) -> int:
+    def add_box_column(self, data: list, y: int, height=60, spacing_between_boxes=10) -> int:
+        
+        column_width = self.WIDTH - 2 * self.margin
+        box_width = (column_width - spacing_between_boxes * (len(data) - 1)) / len(data)
+
+        y = y - height - spacing_between_boxes * 2
         x = self.margin
-        y = y - height - spacing
-        width = self.WIDTH / len(data) - 100 / (len(data) - 1)
 
         for item in data:
             self.draw_box(
@@ -221,9 +224,9 @@ class Report(object):
                 x=x,
                 y=y,
                 height=height,
-                width=width
+                width=box_width
             )
-            x += (self.WIDTH - self.margin * 2) / len(data)
+            x += spacing_between_boxes + box_width
 
         return y
 
