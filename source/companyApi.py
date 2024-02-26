@@ -137,7 +137,7 @@ class CompanyApi(object):
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(10, "netIncomeMargin")),
-                'description': '10 year net income margin CAGR.'
+                'description': '10 year income margin CAGR.'
             }
         ]
 

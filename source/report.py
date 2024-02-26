@@ -111,7 +111,8 @@ class Report(object):
 
     def add_header(self) -> None:
         # Load and draw the icon
-        self.canvas.drawImage(self.IMAGE_PATH, 32, self.HEIGHT - 34, width=10, height=10, preserveAspectRatio=True, mask='auto')
+        self.canvas.drawImage(self.IMAGE_PATH, 32, self.HEIGHT - 34,
+                              width=10, height=10, preserveAspectRatio=True, mask='auto')
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
 
