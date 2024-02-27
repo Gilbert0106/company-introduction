@@ -1,5 +1,6 @@
 import os.path
 from datetime import date
+from typing import Union
 
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.lib import colors
@@ -210,9 +211,11 @@ class Report(object):
         return y - self.add_paragraph(self.company.get_summary(), y=y - heading_height - 20) - heading_height - 20
 
     def add_box_column(self, data: list, y: int, height=60, spacing_between_boxes=10) -> int:
-        
+
         column_width = self.WIDTH - 2 * self.margin
-        box_width = (column_width - spacing_between_boxes * (len(data) - 1)) / len(data)
+        box_width = (
+            column_width - spacing_between_boxes * (len(data) - 1)
+        ) / len(data)
 
         y = y - height - spacing_between_boxes * 2
         x = self.margin
@@ -257,31 +260,13 @@ class Report(object):
             aW=width - 20
         )
 
-    def add_bar_chart(self, data: list, y: int) -> None:
-        # Add a heading 2
-        heading_height = self.add_heading_2(
-            text="Figure 2: Revenue and earnings per year.",
-            x=self.margin,
-            y=y - 20
-        )
+    def add_bar_chart(self, data: list, y: int, chart_height: int = 200) -> None:
 
-        # Add helptext
-        self.add_help_text(
-            text="Total revenue and net income per year ($ M.)",
-            y=y - heading_height - 30
-        )
-
-        # Create a ReportLab Drawing object
-        drawing = Drawing(
-            width=self.WIDTH - self.margin * 2,
-            height=200
-        )
-
-        # Create a VerticalBarChart
+        # TODO Make keys in data dynamic, maybe get by index? Or generic like x and y a
         chart = VerticalBarChart()
         chart.strokeColor = colors.white
         chart.width = self.WIDTH - self.margin * 2.6
-        chart.height = 200
+        chart.height = chart_height
         chart.data = [data['revenues'], data['earnings']]
 
         chart.bars[0].fillColor = colors.black
@@ -301,23 +286,12 @@ class Report(object):
             max(data['earnings'])
         ) * 1.1
 
-        # Add the bar chart to the drawing
-        drawing.add(chart)
-
-        # Draw the drawing on the canvas
-        drawing.wrapOn(
-            canv=self.canvas,
-            aW=self.WIDTH - self.margin * 6,
-            aH=chart.height
+        return self.draw_chart(
+            heading="Figure 2: Revenue and earnings per year.",
+            help_text="Total revenue and net income per year ($ M.)",
+            chart=chart,
+            y=y
         )
-
-        drawing.drawOn(
-            canvas=self.canvas,
-            x=32,
-            y=self.y - chart.height - heading_height - 70
-        )
-
-        return self.y - chart.height - heading_height - 70
 
     def add_line_chart(self, profiles: list, y: int) -> None:
         # Add a heading 2
@@ -392,6 +366,40 @@ class Report(object):
                 stroke=1,
                 fill=1
             )
+
+    def draw_chart(self, heading: str, help_text: str, chart: Union[HorizontalLineChart, VerticalBarChart], y: int) -> None:
+
+        heading_height = self.add_heading_2(
+            text=heading,
+            x=self.margin,
+            y=y - 20
+        )
+
+        self.add_help_text(
+            text=help_text,
+            y=y - heading_height - 30
+        )
+
+        drawing = Drawing(
+            width=self.WIDTH - self.margin * 2,
+            height=chart.height
+        )
+
+        drawing.add(chart)
+
+        drawing.wrapOn(
+            canv=self.canvas,
+            aW=self.WIDTH - self.margin * 6,
+            aH=chart.height
+        )
+
+        drawing.drawOn(
+            canvas=self.canvas,
+            x=32,
+            y=self.y - chart.height - heading_height - 70
+        )
+
+        return self.y - chart.height - heading_height - 70
 
     def save(self) -> None:
         self.canvas.save()
