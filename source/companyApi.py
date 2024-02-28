@@ -167,16 +167,16 @@ class CompanyApi(object):
 
         return tickers_to_compare
 
-    def get_revenue_and_earnings_data_bar_chart(self) -> dict:
+    def get_revenue_and_earnings_data_for_bar_chart(self) -> dict:
 
-        data = {"years": [], "revenues": [], "earnings": []}
+        data = {"category_names": [], "values": [[], []]}
 
         for statements in self.income_statements[:10]:
-            data['years'].insert(0, datetime.strptime(
-                statements['fiscalDateEnding'], '%Y-%m-%d').year)
-            data['revenues'].insert(
+            data['category_names'].insert(0, str(datetime.strptime(
+                statements['fiscalDateEnding'], '%Y-%m-%d').year))
+            data['values'][0].insert(
                 0, float(statements['totalRevenue']) / 1000000)
-            data['earnings'].insert(
+            data['values'][1].insert(
                 0, float(statements['netIncome']) / 1000000)
 
         return data

@@ -70,8 +70,10 @@ class Report(object):
 
         self.new_page()
 
-        self.y = self.add_bar_chart(
-            data=self.company.get_revenue_and_earnings_data_bar_chart(),
+        self.y = self.add_vertical_bar_chart(
+            data=self.company.get_revenue_and_earnings_data_for_bar_chart(),
+            heading="Figure 2: Revenue and earnings per year.",
+            help_text="Total revenue and net income per year ($ M.)",
             y=self.y
         )
 
@@ -260,35 +262,29 @@ class Report(object):
             aW=width - 20
         )
 
-    def add_bar_chart(self, data: list, y: int, chart_height: int = 200) -> None:
-
-        # TODO Make keys in data dynamic, maybe get by index? Or generic like x and y a
+    def add_vertical_bar_chart(self, data: list, heading: str, help_text: str, y: int, chart_height: int = 200) -> None:
         chart = VerticalBarChart()
         chart.strokeColor = colors.white
         chart.width = self.WIDTH - self.margin * 2.6
         chart.height = chart_height
-        chart.data = [data['revenues'], data['earnings']]
+        chart.data = data['values']
 
         chart.bars[0].fillColor = colors.black
         chart.bars[0].strokeColor = None
         chart.bars[1].fillColor = colors.grey
         chart.bars[1].strokeColor = None
         chart.fillColor = HexColor("#f5f5f5")
-        chart.categoryAxis.categoryNames = [
-            str(year) for year in data['years']
-        ]
+        chart.categoryAxis.categoryNames = data['category_names']
         chart.categoryAxis.labels.fontName = 'Consola'
 
         chart.valueAxis.labels.fontName = 'Consola'
-        chart.valueAxis.valueMin = min(data['earnings']) * 1.1
-        chart.valueAxis.valueMax = max(
-            max(data['revenues']),
-            max(data['earnings'])
-        ) * 1.1
+        chart.valueAxis.labels.fontSize = 8
+        chart.valueAxis.valueMin = min(min(*data['values'])) * 1.1
+        chart.valueAxis.valueMax = max(max(*data['values'])) * 1.1
 
         return self.draw_chart(
-            heading="Figure 2: Revenue and earnings per year.",
-            help_text="Total revenue and net income per year ($ M.)",
+            heading=heading,
+            help_text=help_text,
             chart=chart,
             y=y
         )
