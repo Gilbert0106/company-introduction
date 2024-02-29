@@ -73,13 +73,24 @@ class Report(object):
         self.y = self.add_vertical_bar_chart(
             data=self.company.get_revenue_and_earnings_data_for_bar_chart(),
             heading="Figure 2: Revenue and earnings per year.",
-            help_text="Total revenue and net income per year ($ M.)",
-            y=self.y
+            help_text="Total revenue and net income per year in millions of " + self.company.get_currency() + ".",
+            y=self.y,
+            chart_height=175
         )
 
         self.y = self.add_box_column(
             data=self.company.get_earnings_and_revenue_cagr(),
             y=self.y
+        )
+
+        self.y -= 20
+
+        self.y = self.add_vertical_bar_chart(
+            data=self.company.get_cash_flow_data_for_bar_chart(),
+            heading="Figure 3: Operating cash flow and free cash flow per year.",
+            help_text="Operating cash flow and free cash flow in millions of" + self.company.get_currency() + ".",
+            y=self.y,
+            chart_height=175
         )
 
     def create_style(self, fontName: str, fontPath: str) -> list:
@@ -278,7 +289,7 @@ class Report(object):
         chart.categoryAxis.labels.fontName = 'Consola'
 
         chart.valueAxis.labels.fontName = 'Consola'
-        chart.valueAxis.labels.fontSize = 8
+        chart.valueAxis.labels.fontSize = 6
         chart.valueAxis.valueMin = min(min(*data['values'])) * 1.1
         chart.valueAxis.valueMax = max(max(*data['values'])) * 1.1
 
