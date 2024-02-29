@@ -82,16 +82,16 @@ class CompanyApi(object):
                 number /= 1000
 
     def calculate_cagr(self, num_years: int, key: str) -> float:
-        num_reports = len(self.income_statements)
-
-        if num_reports < num_years:
+        if len(self.income_statements) < num_years:
             raise Exception(
-                "Not enough historical data to accurately value the company.")
+                "Not enough historical data to accurately value the company."
+            )
 
         ending_value = float(self.income_statements[0][key])
         beginning_value = float(self.income_statements[num_years - 1][key])
+        sign = 1 if ending_value >= beginning_value else -1
 
-        return (ending_value / beginning_value) ** (1 / num_years) - 1
+        return sign * abs((ending_value / beginning_value) ** (1 / num_years) - 1)
 
     def get_introductory_metrics(self) -> list:
         return [
