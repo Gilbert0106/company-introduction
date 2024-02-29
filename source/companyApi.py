@@ -28,6 +28,7 @@ class CompanyApi(object):
             self.alpha_vantage_handle = TimeSeries(
                 key=os.environ.get("ALPHA_VANTAGE_API_KEY"))
             self.income_statements = self.get_income_statements()
+            self.cash_flow_statements = self.get_cash_flow_statements()
         except Exception as e:
             raise Exception(
                 f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
@@ -181,6 +182,20 @@ class CompanyApi(object):
 
         return data
 
+    def get_cash_flow_data_for_bar_chart(self) -> dict:
+
+        data = {"category_names": [], "values": [[], []]}
+
+        for statements in self.cash_flow_statements[:10]:
+            data['category_names'].insert(0, str(datetime.strptime(
+                statements['fiscalDateEnding'], '%Y-%m-%d').year))
+            data['values'][0].insert(
+                0, float(statements['operatingCashflow']) / 1000000)
+            data['values'][1].insert(
+                0, float(statements['freeCashFlowEstimate']) / 1000000)
+
+        return data
+
     def get_income_statements(self) -> dict:
         result = self.fetch("INCOME_STATEMENT")
 
@@ -190,6 +205,44 @@ class CompanyApi(object):
         for annual_report in result['annualReports']:
             annual_report["netIncomeMargin"] = float(
                 annual_report["netIncome"]) / float(annual_report["totalRevenue"])
+
+        return result['annualReports']
+
+    def get_cash_flow_statements(self) -> dict:
+        result = self.fetch("CASH_FLOW")
+
+        if not 'annualReports' in result:
+            raise Exception(result["Information"])
+
+        for annual_report in result['annualReports']:
+
+            operating_cashflow = float(annual_report.get("operatingCashflow", 0))
+            payments_for_operating_activities = float(
+                annual_report.get("paymentsForOperatingActivities", 0))
+            change_in_operating_liabilities = float(
+                annual_report.get("changeInOperatingLiabilities", 0))
+            change_in_operating_assets = float(
+                annual_report.get("changeInOperatingAssets", 0))
+            depreciation_depletion_and_amortization = float(
+                annual_report.get("depreciationDepletionAndAmortization", 0))
+            capital_expenditures = float(
+                annual_report.get("capitalExpenditures", 0))
+            change_in_receivables = float(
+                annual_report.get("changeInReceivables", 0))
+            change_in_inventory = float(annual_report.get("changeInInventory", 0))
+
+            ocf = (
+                operating_cashflow
+                - payments_for_operating_activities
+                + change_in_operating_liabilities
+                + change_in_operating_assets
+                + depreciation_depletion_and_amortization
+            )
+
+            capex = capital_expenditures + change_in_receivables + change_in_inventory
+
+            # Calculate Free Cash Flow (FCF)
+            annual_report["freeCashFlowEstimate"] = ocf - capex
 
         return result['annualReports']
 
