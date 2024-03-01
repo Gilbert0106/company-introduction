@@ -82,8 +82,9 @@ class CompanyApi(object):
             else:
                 number /= 1000
 
-    def calculate_cagr(self, num_years: int, key: str) -> float:
-        if len(self.income_statements) < num_years:
+    @staticmethod
+    def calculate_cagr(annualReports: dict, num_years: int, key: str) -> float:
+        if len(annualReports) < num_years:
             raise Exception(
                 "Not enough historical data to accurately value the company."
             )
@@ -118,26 +119,26 @@ class CompanyApi(object):
             }
         ]
 
-    def get_earnings_and_revenue_cagr(self) -> list:
+    def get_revenue_and_earnings_data_for_box_column(self) -> list:
         return [
             {
-                'value': self.format_percentage(self.calculate_cagr(3, "totalRevenue")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 3, "totalRevenue")),
                 'description': '3 year total revenue CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(3, "netIncome")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 3, "netIncome")),
                 'description': '3 year net income CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(10, "totalRevenue")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "totalRevenue")),
                 'description': '10 year total revenue CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(10, "netIncome")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "netIncome")),
                 'description': '10 year net income CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(10, "netIncomeMargin")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "netIncomeMargin")),
                 'description': '10 year income margin CAGR.'
             }
         ]
