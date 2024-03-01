@@ -56,13 +56,16 @@ class Report(object):
             raise Exception(e)
 
         self.new_page()
+
         self.y = self.add_business_summary(self.y)
+
         self.y = self.add_box_column(
-            data=self.company.get_introductory_metrics(),
+            data=self.company.get_introductory_metrics_for_box_column(),
             y=self.y
         )
+
         self.add_line_chart(
-            profiles=self.company.get_historical_price_data(
+            profiles=self.company.get_historical_price_data_for_line_chart(
                 tickers_to_compare=self.TICKERS_TO_COMPARE
             ),
             y=self.y
@@ -72,14 +75,15 @@ class Report(object):
 
         self.y = self.add_vertical_bar_chart(
             data=self.company.get_revenue_and_earnings_data_for_bar_chart(),
-            heading="Figure 2: Revenue and earnings per year.",
-            help_text="Total revenue and net income per year in millions of " + self.company.get_currency() + ".",
+            heading="Figure 2: Revenue & earnings per year.",
+            help_text="Total revenue & net income per year in millions of " +
+            self.company.currency + ".",
             y=self.y,
             chart_height=175
         )
 
         self.y = self.add_box_column(
-            data=self.company.get_earnings_and_revenue_cagr(),
+            data=self.company.get_revenue_and_earnings_data_for_box_column(),
             y=self.y
         )
 
@@ -87,10 +91,16 @@ class Report(object):
 
         self.y = self.add_vertical_bar_chart(
             data=self.company.get_cash_flow_data_for_bar_chart(),
-            heading="Figure 3: Operating cash flow and free cash flow per year.",
-            help_text="Operating cash flow and free cash flow in millions of" + self.company.get_currency() + ".",
+            heading="Figure 3: Operating cash flow & free cash flow per year.",
+            help_text="Operating cash flow & free cash flow in millions of " +
+            self.company.currency + ".",
             y=self.y,
             chart_height=175
+        )
+
+        self.y = self.add_box_column(
+            data=self.company.get_operating_cash_flow_and_free_cash_flow_data_for_box_column(),
+            y=self.y
         )
 
     def create_style(self, fontName: str, fontPath: str) -> list:
