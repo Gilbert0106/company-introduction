@@ -89,13 +89,13 @@ class CompanyApi(object):
                 "Not enough historical data to accurately value the company."
             )
 
-        ending_value = float(self.income_statements[0][key])
-        beginning_value = float(self.income_statements[num_years - 1][key])
+        ending_value = float(annualReports[0][key])
+        beginning_value = float(annualReports[num_years - 1][key])
         sign = 1 if ending_value >= beginning_value else -1
 
         return sign * abs((ending_value / beginning_value) ** (1 / num_years) - 1)
 
-    def get_introductory_metrics(self) -> list:
+    def get_introductory_metrics_for_box_column(self) -> list:
         return [
             {
                 'value': self.format_amount(self.info['marketCap']),
@@ -142,8 +142,28 @@ class CompanyApi(object):
                 'description': '10 year income margin CAGR.'
             }
         ]
+    
+    def get_operating_cash_flow_and_free_cash_flow_data_for_box_column(self) -> list:
+        return [
+            {
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 3, "operatingCashFlow")),
+                'description': '3 year total revenue CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 3, "freeCashFlowEstimate")),
+                'description': '3 year net income CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "operatingCashFlow")),
+                'description': '10 year total revenue CAGR.'
+            },
+            {
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "freeCashFlowEstimate")),
+                'description': '10 year net income CAGR.'
+            },
+        ]
 
-    def get_historical_price_data(self, tickers_to_compare: list, start_date: str = None) -> dict:
+    def get_historical_price_data_for_line_chart(self, tickers_to_compare: list, start_date: str = None) -> dict:
 
         if start_date == None:
             start_date = (datetime.now() - timedelta(days=10 * 365)
@@ -216,34 +236,9 @@ class CompanyApi(object):
             raise Exception(result["Information"])
 
         for annual_report in result['annualReports']:
-
-            operating_cashflow = float(annual_report.get("operatingCashflow", 0))
-            payments_for_operating_activities = float(
-                annual_report.get("paymentsForOperatingActivities", 0))
-            change_in_operating_liabilities = float(
-                annual_report.get("changeInOperatingLiabilities", 0))
-            change_in_operating_assets = float(
-                annual_report.get("changeInOperatingAssets", 0))
-            depreciation_depletion_and_amortization = float(
+            # Calculate Free Cash Flow (FCF) estimate
+            annual_report["freeCashFlowEstimate"] = float(annual_report.get("operatingCashflow", 0)) - float(
                 annual_report.get("depreciationDepletionAndAmortization", 0))
-            capital_expenditures = float(
-                annual_report.get("capitalExpenditures", 0))
-            change_in_receivables = float(
-                annual_report.get("changeInReceivables", 0))
-            change_in_inventory = float(annual_report.get("changeInInventory", 0))
-
-            ocf = (
-                operating_cashflow
-                - payments_for_operating_activities
-                + change_in_operating_liabilities
-                + change_in_operating_assets
-                + depreciation_depletion_and_amortization
-            )
-
-            capex = capital_expenditures + change_in_receivables + change_in_inventory
-
-            # Calculate Free Cash Flow (FCF)
-            annual_report["freeCashFlowEstimate"] = ocf - capex
 
         return result['annualReports']
 
