@@ -146,20 +146,20 @@ class CompanyApi(object):
     def get_operating_cash_flow_and_free_cash_flow_data_for_box_column(self) -> list:
         return [
             {
-                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 3, "operatingCashFlow")),
-                'description': '3 year total revenue CAGR.'
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 3, "operatingCashflow")),
+                'description': '3 year OCF CAGR.'
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 3, "freeCashFlowEstimate")),
-                'description': '3 year net income CAGR.'
+                'description': '3 year FCF CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "operatingCashFlow")),
-                'description': '10 year total revenue CAGR.'
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "operatingCashflow")),
+                'description': '10 year OCF CAGR.'
             },
             {
                 'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "freeCashFlowEstimate")),
-                'description': '10 year net income CAGR.'
+                'description': '10 year FCF CAGR.'
             },
         ]
 
@@ -237,7 +237,7 @@ class CompanyApi(object):
 
         for annual_report in result['annualReports']:
             # Calculate Free Cash Flow (FCF) estimate
-            annual_report["freeCashFlowEstimate"] = float(annual_report.get("operatingCashflow", 0)) - float(
+            annual_report["freeCashFlowEstimate"] = float(annual_report["operatingCashflow"]) - float(
                 annual_report.get("depreciationDepletionAndAmortization", 0))
 
         return result['annualReports']
