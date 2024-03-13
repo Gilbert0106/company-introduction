@@ -4,6 +4,7 @@ A dockerized Python CLI program that generates a report of a publically traded c
 # Prerequisites
 1. [Install Docker](https://docs.docker.com/get-docker/)
 2. Clone this repository
+3. Generate an API key for Alpha Vantage
 
 ## Environment Configuration
 
@@ -25,9 +26,6 @@ This project depends upon the Alpha Vantage API. So to use this application you 
 
 4. **Save the Changes:**
    - Save the changes to the `.env` file.
-### Important Note:
-
-- **Security:** Ensure that your `.env` file, especially containing sensitive information, is not shared or committed to version control. Add it to your `.gitignore` file to prevent accidental commits.
 
 # A) Starting the container using docker-compose
 In order to use the application you will need to build an image and start a container of it.
