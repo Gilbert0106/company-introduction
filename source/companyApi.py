@@ -1,6 +1,7 @@
 import os
 import yfinance as yf
 import requests
+import json
 from datetime import datetime, timedelta
 from alpha_vantage.timeseries import TimeSeries
 
@@ -11,19 +12,35 @@ class CompanyApi(object):
         'EUR': '€',
         'YEN': '¥'
     }
-
+    
     currency: str
+    
+    logo_url: str
 
     def __init__(self, ticker: str) -> None:
         self.ticker = ticker
-
+        self.logo_url = None 
+        
+        try: 
+            self.set_yfinance_handle()
+            self.set_alpha_vantage_handle()
+            self.set_logo_url()
+            self.set_currency()
+        except Exception as e:
+            raise Exception(str(e)) 
+            
+    def set_yfinance_handle(self) -> None: 
         try:
             self.yfinance_handle = yf.Ticker(self.ticker)
             self.info = self.yfinance_handle.info
+            if self.info['quoteType'] != 'EQUITY':
+                raise Exception(
+                    self.ticker + " does not seem to be a valid company stock ticker.")
         except:
             raise Exception(
-                self.ticker + " does not seem to be a valid ticker.")
-
+                f'"{self.ticker}", does not seem to be a valid ticker.')
+            
+    def set_alpha_vantage_handle(self) -> None: 
         try:
             self.alpha_vantage_handle = TimeSeries(
                 key=os.environ.get("ALPHA_VANTAGE_API_KEY"))
@@ -32,13 +49,21 @@ class CompanyApi(object):
         except Exception as e:
             raise Exception(
                 f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
-
-        if self.info['quoteType'] != 'EQUITY':
-            raise Exception(
-                self.ticker + " does not seem to be a valid company stock ticker.")
-
-        self.set_currency()
-
+        
+    def set_logo_url(self) -> None:
+        if os.environ.get("API_NINJAS_KEY"):
+            response = requests.get(
+                f'https://api.api-ninjas.com/v1/logo?ticker={self.ticker}', headers={'X-Api-Key': os.environ.get("API_NINJAS_KEY")}
+            )
+            if response.status_code == requests.codes.ok:
+                json_data = json.loads(response.text)
+                if json_data and isinstance(json_data, list) and len(json_data) > 0:
+                    self.logo_url = json_data[0].get("image")
+                else:
+                    raise Exception('No data returned from the API')
+            else:
+                raise Exception('Failed to initialize API Ninjas with the provided key')
+    
     def set_currency(self) -> None:
 
         if not 'currency' in self.info.keys():
@@ -142,7 +167,7 @@ class CompanyApi(object):
                 'description': '10 year income margin CAGR.'
             }
         ]
-    
+
     def get_operating_cash_flow_and_free_cash_flow_data_for_box_column(self) -> list:
         return [
             {
