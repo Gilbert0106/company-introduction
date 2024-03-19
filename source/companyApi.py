@@ -1,35 +1,38 @@
 import os
+import io
 import yfinance as yf
 import requests
-import json
+from typing import Optional
 from datetime import datetime, timedelta
 from alpha_vantage.timeseries import TimeSeries
 
 
 class CompanyApi(object):
+    ticker: str
+    
+    exchange: str
+    
+    currency: str
+    
     CURRENCY_SYMBOLS = {
         'USD': '$',
         'EUR': '€',
         'YEN': '¥'
     }
-    
-    currency: str
-    
-    logo_url: str
 
-    def __init__(self, ticker: str) -> None:
+    def __init__(self, ticker: str, exchange: str) -> None:
         self.ticker = ticker
-        self.logo_url = None 
-        
-        try: 
+        self.exchange = exchange
+        self.logo_url = None
+
+        try:
             self.set_yfinance_handle()
             self.set_alpha_vantage_handle()
-            self.set_logo_url()
             self.set_currency()
         except Exception as e:
-            raise Exception(str(e)) 
-            
-    def set_yfinance_handle(self) -> None: 
+            raise Exception(str(e))
+
+    def set_yfinance_handle(self) -> None:
         try:
             self.yfinance_handle = yf.Ticker(self.ticker)
             self.info = self.yfinance_handle.info
@@ -39,8 +42,8 @@ class CompanyApi(object):
         except:
             raise Exception(
                 f'"{self.ticker}", does not seem to be a valid ticker.')
-            
-    def set_alpha_vantage_handle(self) -> None: 
+
+    def set_alpha_vantage_handle(self) -> None:
         try:
             self.alpha_vantage_handle = TimeSeries(
                 key=os.environ.get("ALPHA_VANTAGE_API_KEY"))
@@ -49,21 +52,24 @@ class CompanyApi(object):
         except Exception as e:
             raise Exception(
                 f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
-        
-    def set_logo_url(self) -> None:
-        if os.environ.get("API_NINJAS_KEY"):
-            response = requests.get(
-                f'https://api.api-ninjas.com/v1/logo?ticker={self.ticker}', headers={'X-Api-Key': os.environ.get("API_NINJAS_KEY")}
-            )
-            if response.status_code == requests.codes.ok:
-                json_data = json.loads(response.text)
-                if json_data and isinstance(json_data, list) and len(json_data) > 0:
-                    self.logo_url = json_data[0].get("image")
-                else:
-                    raise Exception('No data returned from the API')
-            else:
-                raise Exception('Failed to initialize API Ninjas with the provided key')
+
+    def get_logo(self) -> Optional[io.BytesIO]:
+        response = requests.get(f'https://eodhd.com/img/logos/{self.exchange}/{self.ticker.lower()}.png')
+
+        if response.status_code == 404: 
+            response = requests.get(f'https://eodhd.com/img/logos/{self.exchange}/{self.ticker}.png')
     
+        temp_path = "resources/images/temp/company-logo.png"; 
+        
+        if response.status_code == 200:
+            with open(temp_path, "wb") as f:
+                f.write(response.content)
+            return temp_path
+
+
+        print(f'Could not find an image for {self.ticker}, proceeding without it.')
+        return None
+
     def set_currency(self) -> None:
 
         if not 'currency' in self.info.keys():
