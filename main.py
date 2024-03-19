@@ -32,7 +32,6 @@ def main():
     filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%y%m%d")}.pdf'
     load_dotenv()
 
-    # Make sure correct usage of program
     if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
         sys.exit("A valid ticker must be between 3 and 9 characters long.")
     elif not check_internet_connection():
@@ -40,11 +39,12 @@ def main():
     elif os.path.isfile(path=filepath) and not args.overwrite:
         sys.exit(f'A report for ticker {args.ticker_symbol} has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
 
-    selected_option = search_ticker_and_present_options("MSFT")
-        
     try:
+        selected_option = search_ticker_and_present_options(args.ticker_symbol)
+        print(f'Generating a report for {selected_option["Name"]} ({selected_option["Exchange"]})...')
+        
         # Initalize a new CompanyApi and Report
-        company = CompanyApi(ticker=selected_option['Code'])
+        company = CompanyApi(ticker=selected_option['Code'], exchange=selected_option['Exchange'])
         report = Report(company=company, path=filepath)
     except Exception as e:
         sys.exit(e)
@@ -64,8 +64,10 @@ def check_internet_connection():
 def search_ticker_and_present_options(ticker_symbol=str)-> Optional[Dict[str, int]]:
     
     options = requests.get(f'https://eodhd.com/api/search/{ticker_symbol}?type=stock&api_token={os.environ.get("EODHD_API_KEY")}&fmt=json').json()
-
-    if len(options) == 1: 
+    
+    if not len(options): 
+        raise ValueError(f'Can not find any companies matching "{ticker_symbol}".')
+    elif len(options) == 1: 
         return options[0]
     
     print("Please choose from the following options:")
