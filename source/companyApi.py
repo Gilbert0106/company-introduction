@@ -1,29 +1,49 @@
 import os
+import io
 import yfinance as yf
 import requests
+from typing import Optional
 from datetime import datetime, timedelta
 from alpha_vantage.timeseries import TimeSeries
 
 
 class CompanyApi(object):
+    ticker: str
+    
+    exchange: str
+    
+    currency: str
+    
     CURRENCY_SYMBOLS = {
         'USD': '$',
         'EUR': '€',
         'YEN': '¥'
     }
 
-    currency: str
-
-    def __init__(self, ticker: str) -> None:
+    def __init__(self, ticker: str, exchange: str) -> None:
         self.ticker = ticker
+        self.exchange = exchange
+        self.logo_url = None
 
+        try:
+            self.set_yfinance_handle()
+            self.set_alpha_vantage_handle()
+            self.set_currency()
+        except Exception as e:
+            raise Exception(str(e))
+
+    def set_yfinance_handle(self) -> None:
         try:
             self.yfinance_handle = yf.Ticker(self.ticker)
             self.info = self.yfinance_handle.info
+            if self.info['quoteType'] != 'EQUITY':
+                raise Exception(
+                    self.ticker + " does not seem to be a valid company stock ticker.")
         except:
             raise Exception(
-                self.ticker + " does not seem to be a valid ticker.")
+                f'"{self.ticker}", does not seem to be a valid ticker.')
 
+    def set_alpha_vantage_handle(self) -> None:
         try:
             self.alpha_vantage_handle = TimeSeries(
                 key=os.environ.get("ALPHA_VANTAGE_API_KEY"))
@@ -33,11 +53,22 @@ class CompanyApi(object):
             raise Exception(
                 f"Failed to initialize Alpha Vantage API with the provided key. Error: {str(e)}")
 
-        if self.info['quoteType'] != 'EQUITY':
-            raise Exception(
-                self.ticker + " does not seem to be a valid company stock ticker.")
+    def get_logo(self) -> Optional[io.BytesIO]:
+        response = requests.get(f'https://eodhd.com/img/logos/{self.exchange}/{self.ticker.lower()}.png')
 
-        self.set_currency()
+        if response.status_code == 404: 
+            response = requests.get(f'https://eodhd.com/img/logos/{self.exchange}/{self.ticker}.png')
+    
+        temp_path = "resources/images/temp/company-logo.png"; 
+        
+        if response.status_code == 200:
+            with open(temp_path, "wb") as f:
+                f.write(response.content)
+            return temp_path
+
+
+        print(f'Could not find an image for {self.ticker}, proceeding without it.')
+        return None
 
     def set_currency(self) -> None:
 
@@ -142,7 +173,7 @@ class CompanyApi(object):
                 'description': '10 year income margin CAGR.'
             }
         ]
-    
+
     def get_operating_cash_flow_and_free_cash_flow_data_for_box_column(self) -> list:
         return [
             {

@@ -39,7 +39,7 @@ class Report(object):
         'path': r"resources/fonts/CONSOLA.TTF"
     }
 
-    IMAGE_PATH = "resources/images/clover.png"
+    LOGO_PATH = "resources/images/clover.png"
 
     TOTAL_PAGE_COUNT = 2
 
@@ -135,7 +135,7 @@ class Report(object):
 
     def add_header(self) -> None:
         # Load and draw the icon
-        self.canvas.drawImage(self.IMAGE_PATH, 32, self.HEIGHT - 34,
+        self.canvas.drawImage(self.LOGO_PATH, 32, self.HEIGHT - 34,
                               width=10, height=10, preserveAspectRatio=True, mask='auto')
         self.canvas.setStrokeColorRGB(0, 0, 0)
         self.canvas.setLineWidth(1)
@@ -225,10 +225,14 @@ class Report(object):
         return p.height
 
     def add_business_summary(self, y: int) -> int:
+        if logo := self.company.get_logo():
+            self.canvas.drawImage(logo, 32, y-28, height=30, width=30, preserveAspectRatio=True, mask='auto')
+
         heading_height = self.add_heading_1(
             text="%s (%s)" % (self.company.get_name(),
                               self.company.get_symbol()),
-            y=y
+            y=y,
+            x=70 if logo else 0
         )
 
         return y - self.add_paragraph(self.company.get_summary(), y=y - heading_height - 20) - heading_height - 20

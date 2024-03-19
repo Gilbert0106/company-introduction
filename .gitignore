@@ -1,4 +1,6 @@
 reports/
+resources/images/temp/*
+!resources/images/temp/.gitkeep
 __pycache__/
 source/__pycache__/
 .env

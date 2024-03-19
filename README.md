@@ -13,18 +13,24 @@ A dockerized Python CLI program that generates a report of a publically traded c
 This project depends upon the Alpha Vantage API. So to use this application you are required to configure your api key.
 
 1. **Get a free Alpha Vantage API Key:**
-   - If you don't have an Alpha Vantage API key, you can generate a free one from [https://www.alphavantage.co/support/](https://www.alphavantage.co/support/).
+   - If you don't have an Alpha Vantage API key, you can generate a free one from [https://www.alphavantage.co/support/](https://www.alphavantage.co/support/).<br>
 
-2. **Copy the Example Environment File:**
+2. **OPTIONAL! Get a free API Ninjas key:**
+   - If you add a key for this, a company logo will be fetched and added to the report, omitt or leave blank if you want to skip.
+   - If you don't have an a API Ninjas key, you can generate a free one by signing up at [https://api-ninjas.com/](https://api-ninjas.com/).
+
+3. **Copy the Example Environment File:**
    - In the project root directory, you will find an example environment file named `.env.example`.
    - Copy this file and create a new file named `.env` in the same directory.
 
-3. **Replace the Placeholder with Your API Key:**
+4. **Replace the Placeholder with Your API Key:**
    - Open the `.env` file in a text editor.
    - Locate the line `ALPHA_VANTAGE_API_KEY=YOUR_API_KEY_HERE`.
    - Replace `YOUR_API_KEY_HERE` with your actual Alpha Vantage API key.
+   - Optional: Locate the line `API_NINJAS_KEY=YOUR_API_KEY_HERE`.
+   - Replace `YOUR_API_KEY_HERE` with your actual API Ninjas key.
 
-4. **Save the Changes:**
+5. **Save the Changes:**
    - Save the changes to the `.env` file.
 
 # A) Starting the container using docker-compose
