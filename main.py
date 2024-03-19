@@ -4,6 +4,7 @@ import argparse
 import requests
 from datetime import date
 from dotenv import load_dotenv
+from typing import Optional, Dict, Any
 
 from source.report import Report
 from source.companyApi import CompanyApi
@@ -39,9 +40,11 @@ def main():
     elif os.path.isfile(path=filepath) and not args.overwrite:
         sys.exit(f'A report for ticker {args.ticker_symbol} has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
 
+    selected_option = search_ticker_and_present_options("MSFT")
+        
     try:
         # Initalize a new CompanyApi and Report
-        company = CompanyApi(ticker=args.ticker_symbol)
+        company = CompanyApi(ticker=selected_option['Code'])
         report = Report(company=company, path=filepath)
     except Exception as e:
         sys.exit(e)
@@ -58,6 +61,31 @@ def check_internet_connection():
         return False
 
 
-# Call main()
+def search_ticker_and_present_options(ticker_symbol=str)-> Optional[Dict[str, int]]:
+    
+    options = requests.get(f'https://eodhd.com/api/search/{ticker_symbol}?type=stock&api_token={os.environ.get("EODHD_API_KEY")}&fmt=json').json()
+
+    if len(options) == 1: 
+        return options[0]
+    
+    print("Please choose from the following options:")
+    
+    for index, option in enumerate(options, start=1):
+        print(f"{index}. {option['Name']} ({option['Code']}) - Country: {option['Country']}, Exchange: {option['Exchange']}")
+
+    choice = input("Enter the number corresponding to your choice: ")
+
+    try:
+        choice_index = int(choice) - 1
+        if 0 <= choice_index < len(options):
+            return options[choice_index]
+        else:
+            print("Invalid choice. Please enter a number within the range.")
+            return None
+    except ValueError:
+        print("Invalid input. Please enter a valid number.")
+        return None
+      
+  
 if __name__ == "__main__":
     main()
