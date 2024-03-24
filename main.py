@@ -51,6 +51,9 @@ def main():
 
     # Save report
     report.save()
+    
+    # Remove all temporary files created
+    remove_all_temp_files()
 
 
 def check_internet_connection():
@@ -88,6 +91,18 @@ def search_ticker_and_present_options(ticker_symbol=str)-> Optional[Dict[str, in
         print("Invalid input. Please enter a valid number.")
         return None
       
+def remove_all_temp_files()-> None:
+    directory = "resources/temp"
+    
+    # Iterate over the files in the temp directory
+    for filename in os.listdir(directory):
+        if filename != '.gitkeep':
+            filepath = os.path.join(directory, filename)
+            try:
+                os.remove(filepath)
+            except OSError as e:
+                print(f"Error deleting {filepath}: {e.strerror}")
+
   
 if __name__ == "__main__":
     main()
