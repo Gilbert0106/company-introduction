@@ -59,7 +59,7 @@ class CompanyApi(object):
         if response.status_code == 404: 
             response = requests.get(f'https://eodhd.com/img/logos/{self.exchange}/{self.ticker}.png')
     
-        temp_path = "resources/images/temp/company-logo.png"; 
+        temp_path = "resources/temp/company-logo.png"
         
         if response.status_code == 200:
             with open(temp_path, "wb") as f:
