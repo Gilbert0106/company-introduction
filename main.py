@@ -32,9 +32,7 @@ def main():
     filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%y%m%d")}.pdf'
     load_dotenv()
 
-    if len(args.ticker_symbol) < 3 or len(args.ticker_symbol) > 10:
-        sys.exit("A valid ticker must be between 3 and 9 characters long.")
-    elif not check_internet_connection():
+    if not check_internet_connection():
         sys.exit("Make sure you are connected to the internet.")
     elif os.path.isfile(path=filepath) and not args.overwrite:
         sys.exit(f'A report for ticker {args.ticker_symbol} has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
