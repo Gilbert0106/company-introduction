@@ -73,7 +73,7 @@ def search_ticker_and_present_options(query=str)-> Optional[Dict[str, int]]:
     for index, option in enumerate(options, start=1):
         print(f"{index}. {option['Name']} ({option['Code']}) - Country: {option['Country']}, Exchange: {option['Exchange']}")
 
-    choice = input("Enter the number corresponding to your choice: ")
+    choice = input("\nEnter the number corresponding to your choice: ")
 
     try:
         choice_index = int(choice) - 1
