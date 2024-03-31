@@ -1,5 +1,5 @@
 import sys
-import os.path
+import os
 import argparse
 import requests
 from datetime import date
@@ -14,12 +14,12 @@ def main():
     # Create parser and add arguments
     parser = argparse.ArgumentParser(
         prog='Company Introduction',
-        description='Provided a ticker symbol, the program will generate and save a PDF to your local computer',
+        description='Provided a company name or ticker symbol, the program will generate and save a PDF to your local computer',
     )
 
     parser.add_argument(
-        "ticker_symbol",
-        help="The unique ticker symbol of the company you want to create a report on"
+        "query",
+        help="The query to search for, can be company name or ticker."
     )
 
     parser.add_argument(
@@ -27,23 +27,20 @@ def main():
         action="store_true",
         help="overwrite existing report from today"
     )
-
-    args = parser.parse_args()
-    filepath = f'reports/{ args.ticker_symbol }-{date.today().strftime("%y%m%d")}.pdf'
-    load_dotenv()
-
-    if not check_internet_connection():
-        sys.exit("Make sure you are connected to the internet.")
-    elif os.path.isfile(path=filepath) and not args.overwrite:
-        sys.exit(f'A report for ticker {args.ticker_symbol} has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
-
+    
     try:
-        selected_option = search_ticker_and_present_options(args.ticker_symbol)
+        args = parser.parse_args()
+        load_dotenv()
+        check_internet_connection()
+        selected_option = search_ticker_and_present_options(query=args.query)
+        filepath = generate_file_path(ticker_symbol=selected_option["Code"], exchange=selected_option["Exchange"])
+        
         print(f'Generating a report for {selected_option["Name"]} ({selected_option["Exchange"]})...')
         
-        # Initalize a new CompanyApi and Report
+         # Initalize a new CompanyApi and Report
         company = CompanyApi(ticker=selected_option['Code'], exchange=selected_option['Exchange'])
         report = Report(company=company, path=filepath)
+        
     except Exception as e:
         sys.exit(e)
 
@@ -54,20 +51,20 @@ def main():
     remove_all_temp_files()
 
 
-def check_internet_connection():
+def check_internet_connection()-> None:
     try:
         requests.get("https://google.com", timeout=5)
-        return True
+        return
     except requests.ConnectionError:
-        return False
+        raise ValueError("Can not generate a report, Make sure you are connected to the internet.")
 
 
-def search_ticker_and_present_options(ticker_symbol=str)-> Optional[Dict[str, int]]:
+def search_ticker_and_present_options(query=str)-> Optional[Dict[str, int]]:
     
-    options = requests.get(f'https://eodhd.com/api/search/{ticker_symbol}?type=stock&api_token={os.environ.get("EODHD_API_KEY")}&fmt=json').json()
+    options = requests.get(f'https://eodhd.com/api/search/{query}?type=stock&api_token={os.environ.get("EODHD_API_KEY")}&fmt=json').json()
     
     if not len(options): 
-        raise ValueError(f'Can not find any companies matching "{ticker_symbol}".')
+        raise ValueError(f'Can not find any companies matching "{query}".')
     elif len(options) == 1: 
         return options[0]
     
@@ -88,7 +85,15 @@ def search_ticker_and_present_options(ticker_symbol=str)-> Optional[Dict[str, in
     except ValueError:
         print("Invalid input. Please enter a valid number.")
         return None
-      
+
+def generate_file_path(ticker_symbol=str, exchange=str, overwrite=bool)->str:
+    filepath = f'reports/{ ticker_symbol }-{exchange}-{date.today().strftime("%y%m%d")}.pdf'
+    
+    if os.path.isfile(path=filepath) and not overwrite:
+        sys.exit(f'A report for ticker {ticker_symbol} (Exchange: {exchange}) has already been generated today. If you would like to overwrite the previous version you may run the program with --overwrite.')
+
+    return filepath
+
 def remove_all_temp_files()-> None:
     directory = "resources/temp"
     
