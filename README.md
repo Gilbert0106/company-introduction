@@ -8,27 +8,24 @@ A dockerized Python CLI program that generates a report of a publically traded c
 
 ## Environment Configuration
 
-### Alpha Vantage API Key
-
-This project depends upon the Alpha Vantage API. So to use this application you are required to configure your api key.
+This project depends upon the Alpha Vantage API and EODHD API. So to use this application you are required to configure these two api keys.
 
 1. **Get a free Alpha Vantage API Key:**
    - If you don't have an Alpha Vantage API key, you can generate a free one from [https://www.alphavantage.co/support/](https://www.alphavantage.co/support/).<br>
 
-2. **OPTIONAL! Get a free API Ninjas key:**
-   - If you add a key for this, a company logo will be fetched and added to the report, omitt or leave blank if you want to skip.
-   - If you don't have an a API Ninjas key, you can generate a free one by signing up at [https://api-ninjas.com/](https://api-ninjas.com/).
+2. **Get a free EODHD API Key:**
+   - If you don't have an a EODHD API key, you can generate a free one by signing up at [https://eodhd.com/register](https://eodhd.com/register).
 
 3. **Copy the Example Environment File:**
    - In the project root directory, you will find an example environment file named `.env.example`.
    - Copy this file and create a new file named `.env` in the same directory.
 
-4. **Replace the Placeholder with Your API Key:**
+4. **Replace the Placeholder with Your API Keys:**
    - Open the `.env` file in a text editor.
    - Locate the line `ALPHA_VANTAGE_API_KEY=YOUR_API_KEY_HERE`.
    - Replace `YOUR_API_KEY_HERE` with your actual Alpha Vantage API key.
-   - Optional: Locate the line `API_NINJAS_KEY=YOUR_API_KEY_HERE`.
-   - Replace `YOUR_API_KEY_HERE` with your actual API Ninjas key.
+   - Locate the line `EODHD_API_KEY=YOUR_API_KEY_HERE`.
+   - Replace `YOUR_API_KEY_HERE` with your actual EODHD API key.
 
 5. **Save the Changes:**
    - Save the changes to the `.env` file.
@@ -77,14 +74,25 @@ Note: If the path contains spaces, you may need to use quotes around the path, l
 
 # Usage
 
-In order to generate a report for the company run the below command while attached to the container
+In order to generate a report for the company run the below command while attached to the container. Company query is the search term you want the program to use while looking for the stock.
 
 ```
-generate-report [TICKER SYMBOL]
+generate-report [COMPANY QUERY]
+```
+
+Then choose from the list of options which company to generate the report for.
+
+```
+Please choose from the following options:
+1. Option 1 - Country: USA, Exchange: US
+2. Option 2 - Country: USA, Exchange: US
+3. Option 3 - Country: USA, Exchange: US
+
+Enter the number corresponding to your choice:
 ```
 
 **Example** 
-Generating report for Netflix (Ticker symbol NFLX)
+Generating report for Netflix (Ticker symbol NFLX us exchange)
 
 ```
 generate-report Netflix
@@ -111,7 +119,7 @@ Enter the number corresponding to your choice: 1
 If you would like to generate a new report on the same company on the same day you will have to use the flag --overwrite, see below for example
 
 ```
-generate-report NFLX --overwrite
+generate-report Netflix --overwrite
 ```
 
 To get some information on the arguments available please use -h or --help
