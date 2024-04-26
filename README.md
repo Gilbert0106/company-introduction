@@ -87,7 +87,25 @@ generate-report [TICKER SYMBOL]
 Generating report for Netflix (Ticker symbol NFLX)
 
 ```
-generate-report NFLX
+generate-report Netflix
+```
+
+```
+Please choose from the following options:
+1. Netflix Inc (NFLX) - Country: USA, Exchange: US
+2. Netflix Inc. (0QYI) - Country: UK, Exchange: LSE
+3. Netflix Inc (NFC) - Country: Germany, Exchange: XETRA
+4. Netflix Inc CDR (NFLX) - Country: Canada, Exchange: NEO
+5. Netflix Inc (NFLX34) - Country: Brazil, Exchange: SA
+6. Netflix Inc (NFLX) - Country: Mexico, Exchange: MX
+7. Netflix Inc (NFC) - Country: Germany, Exchange: F
+8. Netflix Inc (NFC) - Country: Germany, Exchange: STU
+9. Netflix Inc (NFC) - Country: Germany, Exchange: DU
+10. Netflix Inc (NFC) - Country: Germany, Exchange: BE
+11. Netflix Inc (NFC) - Country: Germany, Exchange: MU
+12. NETFLIX INC. CDR (NFC1) - Country: Germany, Exchange: F
+
+Enter the number corresponding to your choice: 1
 ```
 
 If you would like to generate a new report on the same company on the same day you will have to use the flag --overwrite, see below for example
