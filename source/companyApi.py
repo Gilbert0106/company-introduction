@@ -161,15 +161,15 @@ class CompanyApi(object):
                 'description': '3 year net income CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "totalRevenue")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, min(10, len(self.income_statements)), "totalRevenue")),
                 'description': '10 year total revenue CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "netIncome")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, min(10, len(self.income_statements)), "netIncome")),
                 'description': '10 year net income CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.income_statements, 10, "netIncomeMargin")),
+                'value': self.format_percentage(self.calculate_cagr(self.income_statements, min(10, len(self.income_statements)), "netIncomeMargin")),
                 'description': '10 year income margin CAGR.'
             }
         ]
@@ -185,11 +185,11 @@ class CompanyApi(object):
                 'description': '3 year FCF CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "operatingCashflow")),
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, min(10, len(self.cash_flow_statements)), "operatingCashflow")),
                 'description': '10 year OCF CAGR.'
             },
             {
-                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, 10, "freeCashFlowEstimate")),
+                'value': self.format_percentage(self.calculate_cagr(self.cash_flow_statements, min(10, len(self.cash_flow_statements)), "freeCashFlowEstimate")),
                 'description': '10 year FCF CAGR.'
             },
         ]
